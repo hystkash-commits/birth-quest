@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#08091A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BIRTH QUEST">
+<link rel="manifest" href="manifest.json">
+<title>BIRTH QUEST</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+:root{
+  --bg:#08091A;--panel:#0F1225;--panel2:#161A30;--border:#2A3050;
+  --gold:#E8C44A;--gold2:#B89030;--pink:#F4A8C0;--mint:#78D8C0;
+  --blue:#4A80E8;--text:#E8E0D0;--text2:#9890A8;--red:#E85050;--green:#50D880;
+}
+
+html,body{height:100%;background:var(--bg)}
+body{
+  font-family:'Noto Serif JP',serif;
+  display:flex;align-items:flex-start;justify-content:center;
+  min-height:100vh;padding:8px;
+  background:radial-gradient(ellipse at 50% 0%,#151830 0%,#08091A 70%);
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%,rgba(255,255,255,.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 30% 40%,rgba(255,255,255,.4) 0%,transparent 100%),
+    radial-gradient(1px 1px at 55% 20%,rgba(255,255,255,.7) 0%,transparent 100%),
+    radial-gradient(1px 1px at 75% 60%,rgba(255,255,255,.4) 0%,transparent 100%),
+    radial-gradient(1.5px 1.5px at 85% 10%,rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(1px 1px at 20% 80%,rgba(255,255,255,.3) 0%,transparent 100%),
+    radial-gradient(1px 1px at 65% 85%,rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(1.5px 1.5px at 45% 70%,rgba(255,255,255,.6) 0%,transparent 100%);
+}
+
+#app{width:100%;max-width:400px;padding-top:8px}
+
+/* ── SCREENS ── */
+/* BUG FIX: display は .on クラスのみで制御。IDセレクターに display:flex を書かない */
+.scr{display:none;width:100%;animation:fade-in .3s ease}
+.scr.on{display:block}
+/* flex が必要な画面は .on との組み合わせで上書き（ID詳細度 > クラス詳細度） */
+#s-name.on,#s-intro.on,#s-join.on{display:flex}
+
+@keyframes fade-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══ TITLE ══ */
+#s-title{
+  background:linear-gradient(160deg,#0F1530 0%,#08091A 100%);
+  border:1px solid var(--border);border-radius:16px;
+  padding:28px 20px 24px;text-align:center;
+  box-shadow:0 0 60px rgba(72,128,232,.15);
+}
+.title-eyebrow{font-family:'Press Start 2P',monospace;font-size:6px;letter-spacing:4px;color:var(--gold2);margin-bottom:10px}
+.title-main{font-family:'Press Start 2P',monospace;font-size:26px;letter-spacing:2px;color:var(--gold);text-shadow:0 0 30px rgba(232,196,74,.5),0 2px 0 var(--gold2);margin-bottom:4px;line-height:1.3}
+.title-sub{font-family:'Noto Serif JP',serif;font-size:10px;color:var(--text2);letter-spacing:3px;margin-bottom:20px}
+.title-hero{width:200px;height:120px;margin:0 auto 20px;position:relative}
+
+.cd-wrap{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 20px;margin-bottom:8px}
+.cd-lbl{font-size:9px;color:var(--text2);margin-bottom:4px;letter-spacing:2px}
+.cd-num{font-family:'Press Start 2P',monospace;font-size:30px;color:var(--gold);text-shadow:0 0 16px rgba(232,196,74,.4);line-height:1}
+.cd-unit{font-size:9px;color:var(--gold2);margin-top:3px;letter-spacing:2px}
+.cd-date{font-size:9px;color:var(--text2);margin-top:6px}
+
+.best-bar{
+  font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text2);
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:6px;padding:6px 12px;margin-bottom:16px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.best-bar .best-val{color:var(--gold)}
+
+/* Sound toggle */
+.sound-toggle{
+  position:absolute;top:10px;right:12px;
+  background:transparent;border:1px solid var(--border);
+  border-radius:6px;padding:4px 8px;cursor:pointer;
+  font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text2);
+}
+.sound-toggle:active{background:var(--panel2)}
+
+.btn-row{display:flex;flex-direction:column;gap:10px}
+.btn{width:100%;padding:14px;border:none;border-radius:8px;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:10px;transition:transform .1s,box-shadow .1s;letter-spacing:1px}
+.btn:active{transform:scale(.97)}
+.btn-gold{background:linear-gradient(135deg,#E8C44A,#C89830);color:#1A1200;box-shadow:0 4px 20px rgba(232,196,74,.35)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:active{background:var(--panel2)}
+.btn-mint{background:linear-gradient(135deg,#78D8C0,#40A890);color:#001A14;box-shadow:0 4px 16px rgba(120,216,192,.3)}
+
+/* ══ HOW TO ══ */
+#s-howto{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:28px 20px}
+
+/* ══ NAME INPUT ══ */
+#s-name{
+  background:var(--panel);border:1px solid var(--border);border-radius:12px;
+  padding:36px 24px;
+  flex-direction:column;align-items:center;justify-content:center;
+  min-height:360px;text-align:center;
+}
+.name-prompt{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--gold);line-height:2;margin-bottom:28px}
+.name-input-wrap{
+  background:var(--panel2);border:2px solid var(--gold2);border-radius:8px;
+  padding:14px 16px;width:100%;margin-bottom:20px;
+  position:relative;
+}
+.name-input-wrap input{
+  background:transparent;border:none;outline:none;
+  font-family:'Press Start 2P',monospace;font-size:14px;
+  color:var(--gold);text-align:center;width:100%;caret-color:var(--gold);
+  letter-spacing:2px;
+}
+.name-input-wrap input::placeholder{color:var(--text2);font-size:9px;letter-spacing:1px}
+.name-cursor{
+  display:inline-block;width:2px;height:16px;background:var(--gold);
+  margin-left:2px;animation:blink .7s step-end infinite;vertical-align:middle;
+}
+@keyframes blink{50%{opacity:0}}
+.name-hint{font-size:9px;color:var(--text2);margin-bottom:24px}
+
+/* ══ INTRO ══ */
+#s-intro{
+  background:var(--panel);border:1px solid var(--border);border-radius:12px;
+  padding:28px 24px;min-height:480px;
+  flex-direction:column;justify-content:space-between;
+}
+.intro-text{font-size:14px;line-height:2.6;color:var(--text);flex:1;display:flex;align-items:center;min-height:260px}
+.intro-char{width:120px;height:160px;margin:0 auto 24px;display:block}
+
+/* ══ BATTLE ══ */
+#s-battle{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative}
+
+/* Party bar */
+.party-bar{background:var(--bg);border-bottom:1px solid var(--border);padding:8px 12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.party-label{font-family:'Press Start 2P',monospace;font-size:5px;color:var(--text2);margin-right:4px;letter-spacing:1px}
+/* BUG FIX: スロットを 48×56px に拡大 */
+.party-slot{
+  width:48px;height:56px;border-radius:6px;
+  background:var(--panel2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;transition:all .4s;opacity:.25;
+  position:relative;
+}
+.party-slot.filled{opacity:1;border-color:var(--gold2);box-shadow:0 0 8px rgba(232,196,74,.2)}
+.party-slot.new-join{animation:join-pop .5s ease-out}
+@keyframes join-pop{0%{transform:scale(0);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+
+/* Streak badge */
+.streak-badge{
+  font-family:'Press Start 2P',monospace;font-size:6px;
+  background:linear-gradient(135deg,#E85020,#FF8040);
+  color:white;padding:4px 7px;border-radius:10px;
+  margin-left:auto;
+  display:none;
+  animation:streak-pulse 0.5s ease-out;
+}
+@keyframes streak-pulse{0%{transform:scale(0)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+
+.status-bar{background:var(--panel2);border-bottom:1px solid var(--border);padding:6px 14px;display:flex;justify-content:space-between;align-items:center}
+.status-bar span{font-family:'Press Start 2P',monospace;font-size:6px;color:var(--text2)}
+.status-bar .exp{color:var(--blue)}
+
+/* Field */
+.field{
+  height:180px;position:relative;
+  background:linear-gradient(180deg,#0A1028 0%,#0A1028 55%,#101830 55%,#0D1426 100%);
+  overflow:hidden;
+}
+.field::before{content:'';position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(0deg,rgba(20,30,60,.8) 0%,transparent 100%)}
+.field::after{content:'';position:absolute;top:55%;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(72,128,232,.2),transparent)}
+
+/* HUDs */
+.enemy-hud{position:absolute;top:10px;left:10px;background:rgba(8,9,26,.85);border:1px solid var(--border);border-radius:6px;padding:7px 10px;min-width:144px;backdrop-filter:blur(4px)}
+.hud-name{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text);margin-bottom:5px}
+.hud-lv{font-size:5px;color:var(--text2);float:right}
+.hp-row{display:flex;align-items:center;gap:5px}
+.hp-lbl{font-family:'Press Start 2P',monospace;font-size:6px;color:var(--text2)}
+.hp-track{flex:1;height:6px;background:#1A1A2E;border-radius:3px;overflow:hidden;border:1px solid #2A2A4A}
+.hp-fill{height:100%;border-radius:3px;transition:width .5s,background .4s}
+.player-hud{position:absolute;bottom:8px;right:10px;background:rgba(8,9,26,.85);border:1px solid var(--border);border-radius:6px;padding:7px 10px;min-width:144px;backdrop-filter:blur(4px)}
+.exp-row{display:flex;align-items:center;gap:5px;margin-top:5px}
+.exp-lbl{font-family:'Press Start 2P',monospace;font-size:5px;color:var(--blue)}
+.exp-track{flex:1;height:3px;background:#1A1A2E;border-radius:2px;overflow:hidden}
+.exp-fill{height:100%;background:var(--blue);border-radius:2px;transition:width .5s}
+
+/* Sprites */
+.enemy-spr{position:absolute;right:18px;top:10px;width:80px;height:100px;animation:enemy-hover 3s ease-in-out infinite alternate;filter:drop-shadow(0 4px 12px rgba(72,128,232,.4))}
+@keyframes enemy-hover{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-10px) rotate(2deg)}}
+.player-spr{position:absolute;left:14px;bottom:14px;width:52px;height:68px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));animation:player-breathe 4s ease-in-out infinite alternate}
+@keyframes player-breathe{from{transform:translateY(0)}to{transform:translateY(-4px)}}
+
+/* Message */
+.msg-area{background:var(--panel);border-top:1px solid var(--border);padding:12px 16px 10px;min-height:80px;cursor:pointer;position:relative}
+.msg-text{font-size:12px;line-height:2.1;color:var(--text);white-space:pre-wrap}
+.msg-next{position:absolute;bottom:8px;right:14px;font-family:'Press Start 2P',monospace;font-size:7px;color:var(--gold);animation:blink .6s step-end infinite}
+
+/* Commands */
+.cmd-panel{border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
+.cmd-btn{background:var(--panel2);border:none;padding:13px 10px;cursor:pointer;font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text);text-align:left;line-height:1.8;transition:background .1s}
+.cmd-btn::before{content:'  '}
+.cmd-btn:hover::before{content:'▶ ';color:var(--gold)}
+.cmd-btn:active:not(:disabled){background:#1E2A40}
+.cmd-btn:disabled{cursor:default}
+.cmd-btn.c-correct{background:#0A2820;color:var(--green)}
+.cmd-btn.c-wrong{background:#2A0808;color:var(--red)}
+.cmd-btn.c-reveal{background:#0A2018;color:var(--mint)}
+
+/* ══ JOIN CUTSCENE ══ */
+#s-join{
+  background:var(--panel);border:1px solid var(--border);border-radius:12px;
+  padding:32px 24px;text-align:center;min-height:420px;
+  flex-direction:column;align-items:center;justify-content:center;
+}
+.join-char{width:120px;height:140px;margin:0 auto 20px;display:block;animation:join-appear .6s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes join-appear{from{opacity:0;transform:scale(.3) translateY(30px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.join-name{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--gold);margin-bottom:16px}
+.join-msg{font-size:13px;line-height:2.2;color:var(--text);margin-bottom:28px}
+
+/* ══ RESULT ══ */
+#s-result{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:24px 20px;text-align:center}
+.result-party{display:flex;justify-content:center;gap:6px;margin-bottom:20px;flex-wrap:wrap}
+.result-char{animation:r-appear .5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes r-appear{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.result-heading{font-family:'Press Start 2P',monospace;font-size:14px;color:var(--gold);text-shadow:0 0 20px rgba(232,196,74,.4);margin-bottom:4px}
+.result-sub{font-size:9px;color:var(--text2);margin-bottom:16px;letter-spacing:1px}
+.score-display{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
+.score-num{font-family:'Press Start 2P',monospace;font-size:36px;color:var(--gold);text-shadow:0 0 16px rgba(232,196,74,.4)}
+.score-out{font-family:'Press Start 2P',monospace;font-size:14px;color:var(--text2)}
+.score-rank{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--mint);margin-top:8px}
+.score-msg{font-size:11px;color:var(--text2);line-height:2;margin-top:8px}
+.new-record{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--gold);margin-top:6px;animation:blink .5s step-end infinite}
+.result-btns{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+
+/* ══ ZUKAN (Encyclopedia) ══ */
+#s-zukan{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px}
+.zukan-title{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--gold);text-align:center;margin-bottom:16px;letter-spacing:1px}
+.zukan-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.zukan-card{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;transition:border-color .2s}
+.zukan-card.unlocked{border-color:var(--gold2)}
+.zukan-card .zk-char{width:64px;height:72px;margin:0 auto 8px;display:block}
+.zukan-card .zk-name{font-family:'Press Start 2P',monospace;font-size:6px;color:var(--gold);margin-bottom:4px}
+.zukan-card .zk-desc{font-size:9px;color:var(--text2);line-height:1.8}
+.zukan-card.locked .zk-char{filter:brightness(0) invert(.2)}
+.zukan-card.locked .zk-name{color:var(--border)}
+.zukan-card.locked .zk-desc{color:var(--border)}
+
+/* ══ EFFECTS ══ */
+.effect-shake{animation:fx-shake .35s}
+@keyframes fx-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.effect-flash{animation:fx-flash .4s}
+@keyframes fx-flash{40%{filter:brightness(1.8) saturate(.5) hue-rotate(100deg)}}
+
+/* Confetti */
+.confetti-layer{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:999}
+.cp{position:absolute;top:-24px;border-radius:2px;animation:cp-fall linear forwards}
+@keyframes cp-fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ── TITLE ── -->
+<div id="s-title" class="scr on" style="position:relative;">
+  <button class="sound-toggle" id="snd-btn" onclick="toggleSound()">♪ ON</button>
+  <div class="title-eyebrow">— A STORY OF NEW LIFE —</div>
+  <div class="title-main">BIRTH<br>QUEST</div>
+  <div class="title-sub">赤ちゃんを迎える旅</div>
+  <div class="title-hero" id="title-hero-svg"></div>
+  <div class="cd-wrap">
+    <div class="cd-lbl">DAYS UNTIL BIRTH</div>
+    <div class="cd-num" id="cd-num">---</div>
+    <div class="cd-unit">DAYS</div>
+    <div class="cd-date">2026年11月21日 出産予定日</div>
+  </div>
+  <div class="best-bar">
+    <span>BEST SCORE</span>
+    <span class="best-val" id="best-display">-- / 12</span>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-gold" onclick="goName()">QUEST START</button>
+    <button class="btn btn-ghost" onclick="goZukan()">図鑑を見る</button>
+    <button class="btn btn-ghost" onclick="goHowto()">HOW TO PLAY</button>
+  </div>
+</div>
+
+<!-- ── HOWTO ── -->
+<div id="s-howto" class="scr">
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:28px 20px;">
+    <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--gold);margin-bottom:20px;text-align:center;">HOW TO PLAY</div>
+    <div style="font-size:12px;color:var(--text);line-height:2.8;margin-bottom:24px;">
+      ▸ 全24問からランダムに12問出題<br>
+      ▸ 4択から正解を選ぼう<br>
+      ▸ 正解で仲間が増えていく<br>
+      ▸ 3連続正解でストリークボーナス！<br>
+      ▸ 仲間は図鑑に記録される<br>
+      ▸ テキストをタップで次へ
+    </div>
+    <button class="btn btn-ghost" onclick="goTitle()">BACK</button>
+  </div>
+</div>
+
+<!-- ── NAME INPUT ── -->
+<div id="s-name" class="scr">
+  <div class="name-prompt">あなたのなまえを<br>おしえてください</div>
+  <div class="name-input-wrap">
+    <input type="text" id="name-input" maxlength="8" placeholder="なまえをいれて" autocomplete="off" spellcheck="false">
+  </div>
+  <div class="name-hint">（最大8文字）</div>
+  <button class="btn btn-gold" onclick="confirmName()" style="width:100%;">決定 ▶</button>
+  <button class="btn btn-ghost" onclick="goTitle()" style="width:100%;margin-top:10px;">もどる</button>
+</div>
+
+<!-- ── INTRO ── -->
+<div id="s-intro" class="scr">
+  <svg class="intro-char" id="intro-char-svg" viewBox="0 0 120 160"></svg>
+  <div class="intro-text" id="intro-text"></div>
+  <button class="btn btn-gold" id="intro-btn" onclick="startBattle()" style="display:none;">旅に出る →</button>
+</div>
+
+<!-- ── BATTLE ── -->
+<div id="s-battle" class="scr">
+  <div class="party-bar">
+    <span class="party-label">PARTY</span>
+    <div class="party-slot" id="ps0"></div>
+    <div class="party-slot" id="ps1"></div>
+    <div class="party-slot" id="ps2"></div>
+    <div class="party-slot" id="ps3"></div>
+    <div class="streak-badge" id="streak-badge">🔥 STREAK!</div>
+  </div>
+  <div class="status-bar">
+    <span id="ql-label">Q.01/12</span>
+    <span class="exp" id="exp-label">EXP ▸ 0</span>
+  </div>
+  <div class="field" id="field">
+    <div class="enemy-hud">
+      <div class="hud-name"><span id="e-name">???</span><span class="hud-lv" id="e-lv">Lv.--</span></div>
+      <div class="hp-row"><span class="hp-lbl">HP</span><div class="hp-track"><div class="hp-fill" id="hp-fill" style="width:100%"></div></div></div>
+    </div>
+    <div class="player-hud">
+      <div class="hud-name"><span id="hud-player-name">PLAYER</span><span class="hud-lv">Lv.1</span></div>
+      <div class="hp-row"><span class="hp-lbl">HP</span><div class="hp-track"><div class="hp-fill" style="width:100%;background:var(--green)"></div></div></div>
+      <div class="exp-row"><span class="exp-lbl">EXP</span><div class="exp-track"><div class="exp-fill" id="e-exp-fill" style="width:0%"></div></div></div>
+    </div>
+    <svg class="enemy-spr" id="enemy-spr" viewBox="0 0 80 100"></svg>
+    <svg class="player-spr" id="player-spr" viewBox="0 0 52 68"></svg>
+  </div>
+  <div class="msg-area" id="msg-area" onclick="onMsgTap()">
+    <div class="msg-text" id="msg-text"></div>
+    <div class="msg-next" id="msg-next" style="display:none;">▼</div>
+  </div>
+  <div class="cmd-panel" id="cmd-panel" style="display:none;">
+    <button class="cmd-btn" id="o0" onclick="pick(0)"></button>
+    <button class="cmd-btn" id="o1" onclick="pick(1)"></button>
+    <button class="cmd-btn" id="o2" onclick="pick(2)"></button>
+    <button class="cmd-btn" id="o3" onclick="pick(3)"></button>
+  </div>
+</div>
+
+<!-- ── JOIN CUTSCENE ── -->
+<div id="s-join" class="scr">
+  <svg class="join-char" id="join-char-svg" viewBox="0 0 120 140"></svg>
+  <div class="join-name" id="join-name"></div>
+  <div class="join-msg" id="join-msg"></div>
+  <button class="btn btn-gold" onclick="afterJoin()">続きへ →</button>
+</div>
+
+<!-- ── RESULT ── -->
+<div id="s-result" class="scr">
+  <div class="result-party" id="result-party"></div>
+  <div class="result-heading" id="r-heading">QUEST CLEAR</div>
+  <div class="result-sub" id="r-sub">お疲れさまでした</div>
+  <div class="score-display">
+    <div><span class="score-num" id="r-num">0</span><span class="score-out"> / 12</span></div>
+    <div class="score-rank" id="r-rank">RANK: S</div>
+    <div class="score-msg" id="r-msg"></div>
+    <div class="new-record" id="r-record" style="display:none;">★ NEW RECORD!</div>
+  </div>
+  <div class="result-btns">
+    <button class="btn btn-gold" onclick="shareResult()">結果をシェア 📤</button>
+    <button class="btn btn-mint" onclick="goZukanFromResult()">図鑑を見る 📖</button>
+    <button class="btn btn-ghost" onclick="restartGame()">もう一度</button>
+    <button class="btn btn-ghost" onclick="goTitle()">タイトルへ</button>
+  </div>
+</div>
+
+<!-- ── ZUKAN ── -->
+<div id="s-zukan" class="scr">
+  <div class="zukan-title">— 仲間図鑑 —</div>
+  <div class="zukan-grid" id="zukan-grid"></div>
+  <button class="btn btn-ghost" id="zukan-back-btn" onclick="goTitle()">BACK</button>
+</div>
+
+</div><!-- /app -->
+<div class="confetti-layer" id="confetti"></div>
+
+<script>
+/* ══════════════════════════════════════════
+   AUDIO ENGINE
+══════════════════════════════════════════ */
+let ac = null, soundEnabled = true, bgmTimer = null, bgmPlaying = false;
+
+function initAC() {
+  if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+  if (ac.state === 'suspended') ac.resume();
+}
+
+function tone(freq, startDelay, dur, type = 'square', vol = 0.08) {
+  if (!soundEnabled || !ac) return;
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.connect(g); g.connect(ac.destination);
+  o.type = type; o.frequency.value = freq;
+  const t = ac.currentTime + startDelay;
+  g.gain.setValueAtTime(vol, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.start(t); o.stop(t + dur + 0.01);
+}
+
+// SFX
+function sfxCorrect()  { initAC(); [[523,.00,.12],[659,.09,.12],[784,.18,.12],[1047,.27,.18]].forEach(([f,t,d])=>tone(f,t,d,'triangle',.09)) }
+function sfxWrong()    { initAC(); tone(220,.00,.12,'sawtooth',.07); tone(185,.13,.2,'sawtooth',.05) }
+function sfxJoin()     { initAC(); [[523,.0,.2],[659,.1,.2],[784,.2,.2],[880,.3,.2],[1047,.4,.25],[1319,.5,.3]].forEach(([f,t,d])=>tone(f,t,d,'triangle',.11)) }
+function sfxStreak()   { initAC(); [[784,.0,.12],[988,.09,.12],[1175,.18,.12],[1568,.27,.18]].forEach(([f,t,d])=>tone(f,t,d,'triangle',.1)) }
+function sfxSelect()   { initAC(); tone(523,.0,.08,'triangle',.05) }
+function sfxTitle()    { initAC(); [[392,.0,.2],[523,.15,.2],[659,.3,.3]].forEach(([f,t,d])=>tone(f,t,d,'triangle',.05)) }
+
+// BGM: look-ahead scheduler (ambient arpeggio, C major)
+const BGM_NOTES = [261.6,329.6,392,523.3,392,329.6,261.6,392,523.3,659.3,523.3,392];
+let bgmIdx = 0, bgmNextTime = 0;
+const BGM_BPS = 2.2; // beats per second
+
+function scheduleBGM() {
+  if (!bgmPlaying || !ac) return;
+  while (bgmNextTime < ac.currentTime + 1.5) {
+    const freq = BGM_NOTES[bgmIdx % BGM_NOTES.length];
+    tone(freq, bgmNextTime - ac.currentTime, 0.35, 'triangle', 0.022);
+    bgmNextTime += 1 / BGM_BPS;
+    bgmIdx++;
+  }
+  bgmTimer = setTimeout(scheduleBGM, 400);
+}
+
+function startBGM() {
+  if (bgmPlaying || !soundEnabled) return;
+  initAC();
+  bgmPlaying = true;
+  bgmNextTime = ac.currentTime + 0.1;
+  scheduleBGM();
+}
+
+function stopBGM() {
+  bgmPlaying = false;
+  clearTimeout(bgmTimer);
+}
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  document.getElementById('snd-btn').textContent = soundEnabled ? '♪ ON' : '♪ OFF';
+  if (soundEnabled) { initAC(); startBGM(); }
+  else stopBGM();
+}
+
+/* ══════════════════════════════════════════
+   VIBRATION
+══════════════════════════════════════════ */
+function vib(pattern) { if ('vibrate' in navigator) navigator.vibrate(pattern) }
+
+/* ══════════════════════════════════════════
+   LOCAL STORAGE
+══════════════════════════════════════════ */
+const LS = {
+  name:    () => localStorage.getItem('bq_name') || '',
+  best:    () => parseInt(localStorage.getItem('bq_best') || '0'),
+  unlocked:() => JSON.parse(localStorage.getItem('bq_unlocked') || '[]'),
+  setName: (v) => localStorage.setItem('bq_name', v),
+  setBest: (v) => localStorage.setItem('bq_best', v),
+  unlock:  (name) => {
+    const u = LS.unlocked();
+    if (!u.includes(name)) { u.push(name); localStorage.setItem('bq_unlocked', JSON.stringify(u)); }
+  }
+};
+
+/* ══════════════════════════════════════════
+   SVG CHARACTERS
+══════════════════════════════════════════ */
+function svgPlayer(w,h){return`<svg viewBox="0 0 52 68" width="${w||52}" height="${h||68}" xmlns="http://www.w3.org/2000/svg"><ellipse cx="26" cy="66" rx="14" ry="3" fill="rgba(0,0,0,0.3)"/><rect x="12" y="44" width="10" height="20" rx="5" fill="#2A4A80"/><rect x="30" y="44" width="10" height="20" rx="5" fill="#2A4A80"/><ellipse cx="17" cy="63" rx="7" ry="4" fill="#1A2A50"/><ellipse cx="35" cy="63" rx="7" ry="4" fill="#1A2A50"/><rect x="10" y="22" width="32" height="26" rx="8" fill="#4A80E0"/><rect x="2" y="22" width="10" height="20" rx="5" fill="#4A80E0"/><rect x="40" y="22" width="10" height="20" rx="5" fill="#4A80E0"/><rect x="21" y="17" width="10" height="8" fill="#F4C090"/><ellipse cx="26" cy="14" rx="12" ry="13" fill="#F4C090"/><ellipse cx="26" cy="5" rx="12" ry="7" fill="#3A2010"/><ellipse cx="14" cy="10" rx="5" ry="7" fill="#3A2010"/><ellipse cx="38" cy="10" rx="5" ry="7" fill="#3A2010"/><ellipse cx="21" cy="13" rx="2" ry="2.5" fill="#1A1010"/><ellipse cx="31" cy="13" rx="2" ry="2.5" fill="#1A1010"/><ellipse cx="21.5" cy="12.5" rx=".7" ry=".7" fill="white"/><ellipse cx="31.5" cy="12.5" rx=".7" ry=".7" fill="white"/><path d="M21 18 Q26 22 31 18" stroke="#C07060" stroke-width="1.5" fill="none" stroke-linecap="round"/><ellipse cx="18" cy="17" rx="3" ry="2" fill="rgba(240,160,130,.4)"/><ellipse cx="34" cy="17" rx="3" ry="2" fill="rgba(240,160,130,.4)"/></svg>`}
+
+function svgBear(w,h){return`<svg viewBox="0 0 120 140" width="${w||120}" height="${h||140}" xmlns="http://www.w3.org/2000/svg"><ellipse cx="60" cy="136" rx="30" ry="5" fill="rgba(0,0,0,0.25)"/><ellipse cx="60" cy="98" rx="34" ry="36" fill="#C8905A"/><ellipse cx="60" cy="102" rx="22" ry="24" fill="#E8B880"/><ellipse cx="22" cy="96" rx="12" ry="18" fill="#C8905A" transform="rotate(-15 22 96)"/><ellipse cx="98" cy="96" rx="12" ry="18" fill="#C8905A" transform="rotate(15 98 96)"/><ellipse cx="40" cy="128" rx="14" ry="10" fill="#C8905A"/><ellipse cx="80" cy="128" rx="14" ry="10" fill="#C8905A"/><circle cx="60" cy="52" r="38" fill="#C8905A"/><circle cx="26" cy="22" r="14" fill="#C8905A"/><circle cx="94" cy="22" r="14" fill="#C8905A"/><circle cx="26" cy="22" r="8" fill="#E89870"/><circle cx="94" cy="22" r="8" fill="#E89870"/><ellipse cx="60" cy="58" rx="28" ry="22" fill="#E8B880"/><circle cx="46" cy="46" r="6" fill="#2A1808"/><circle cx="74" cy="46" r="6" fill="#2A1808"/><circle cx="48" cy="44" r="2" fill="white"/><circle cx="76" cy="44" r="2" fill="white"/><ellipse cx="60" cy="58" rx="6" ry="4" fill="#3A1808"/><path d="M54 63 Q60 70 66 63" stroke="#3A1808" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M36 88 Q60 80 84 88" stroke="#F4A8C0" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="60" cy="84" r="5" fill="#F4A8C0"/></svg>`}
+
+function svgStork(w,h){return`<svg viewBox="0 0 120 140" width="${w||120}" height="${h||140}" xmlns="http://www.w3.org/2000/svg"><ellipse cx="60" cy="137" rx="22" ry="4" fill="rgba(0,0,0,0.2)"/><rect x="46" y="100" width="6" height="36" rx="3" fill="#E88050"/><rect x="68" y="100" width="6" height="36" rx="3" fill="#E88050"/><rect x="38" y="132" width="22" height="5" rx="2.5" fill="#E88050"/><rect x="60" y="132" width="22" height="5" rx="2.5" fill="#E88050"/><ellipse cx="60" cy="80" rx="28" ry="32" fill="#F0F0F0"/><ellipse cx="26" cy="80" rx="14" ry="28" fill="#1A1A2A" transform="rotate(10 26 80)"/><ellipse cx="94" cy="80" rx="14" ry="28" fill="#1A1A2A" transform="rotate(-10 94 80)"/><ellipse cx="60" cy="78" rx="22" ry="28" fill="#F0F0F0"/><rect x="51" y="34" width="18" height="28" rx="9" fill="#F0F0F0"/><circle cx="60" cy="28" r="20" fill="#F0F0F0"/><ellipse cx="60" cy="10" rx="12" ry="6" fill="#E84040"/><circle cx="52" cy="26" r="4" fill="#1A1A2A"/><circle cx="53" cy="25" r="1.5" fill="white"/><path d="M42 28 L30 24 L42 32 Z" fill="#E88050"/><ellipse cx="82" cy="88" rx="16" ry="14" fill="#F0E8D8"/><path d="M68 88 Q82 78 96 88 Q82 98 68 88Z" fill="#E8D8C0"/><circle cx="82" cy="85" r="5" fill="#F4C0A0"/><ellipse cx="82" cy="83" rx="3" ry="2.5" fill="#C07050"/></svg>`}
+
+function svgNurse(w,h){return`<svg viewBox="0 0 120 140" width="${w||120}" height="${h||140}" xmlns="http://www.w3.org/2000/svg"><ellipse cx="60" cy="137" rx="26" ry="5" fill="rgba(0,0,0,0.25)"/><rect x="42" y="94" width="14" height="38" rx="7" fill="#D0C8E8"/><rect x="64" y="94" width="14" height="38" rx="7" fill="#D0C8E8"/><ellipse cx="49" cy="131" rx="10" ry="6" fill="#9888C0"/><ellipse cx="71" cy="131" rx="10" ry="6" fill="#9888C0"/><rect x="28" y="44" width="64" height="56" rx="14" fill="#F0F0F8"/><rect x="52" y="62" width="16" height="3" rx="1.5" fill="#E05050"/><rect x="58" y="56" width="4" height="15" rx="2" fill="#E05050"/><rect x="16" y="48" width="14" height="30" rx="7" fill="#F0F0F8"/><rect x="90" y="48" width="14" height="30" rx="7" fill="#F0F0F8"/><circle cx="23" cy="79" r="7" fill="#F4C090"/><circle cx="97" cy="79" r="7" fill="#F4C090"/><rect x="52" y="34" width="16" height="14" fill="#F4C090"/><ellipse cx="60" cy="28" rx="22" ry="24" fill="#F4C090"/><rect x="40" y="8" width="40" height="14" rx="4" fill="white"/><rect x="40" y="8" width="40" height="5" rx="2" fill="#E8E0F0"/><rect x="54" y="4" width="12" height="8" rx="2" fill="white"/><rect x="40" y="14" width="40" height="3" fill="#E05050"/><ellipse cx="38" cy="24" rx="6" ry="16" fill="#3A2810"/><ellipse cx="82" cy="24" rx="6" ry="16" fill="#3A2810"/><ellipse cx="60" cy="44" rx="22" ry="8" fill="#3A2810"/><ellipse cx="52" cy="26" rx="3" ry="3.5" fill="#1A1010"/><ellipse cx="68" cy="26" rx="3" ry="3.5" fill="#1A1010"/><ellipse cx="52.8" cy="25" rx="1" ry="1" fill="white"/><ellipse cx="68.8" cy="25" rx="1" ry="1" fill="white"/><path d="M52 33 Q60 38 68 33" stroke="#C07060" stroke-width="1.5" fill="none" stroke-linecap="round"/><ellipse cx="46" cy="31" rx="4" ry="3" fill="rgba(240,160,130,.35)"/><ellipse cx="74" cy="31" rx="4" ry="3" fill="rgba(240,160,130,.35)"/></svg>`}
+
+function svgGrandparents(w,h){return`<svg viewBox="0 0 120 140" width="${w||120}" height="${h||140}" xmlns="http://www.w3.org/2000/svg"><ellipse cx="34" cy="136" rx="18" ry="4" fill="rgba(0,0,0,0.2)"/><ellipse cx="86" cy="136" rx="18" ry="4" fill="rgba(0,0,0,0.2)"/><rect x="22" y="90" width="9" height="40" rx="4.5" fill="#6878A8"/><rect x="33" y="90" width="9" height="40" rx="4.5" fill="#6878A8"/><rect x="16" y="44" width="38" height="50" rx="10" fill="#8898C8"/><circle cx="35" cy="64" r="2" fill="#6070A0"/><circle cx="35" cy="74" r="2" fill="#6070A0"/><rect x="6" y="48" width="12" height="26" rx="6" fill="#8898C8"/><rect x="52" y="48" width="12" height="26" rx="6" fill="#8898C8"/><ellipse cx="35" cy="32" rx="17" ry="18" fill="#F0D0B0"/><ellipse cx="35" cy="16" rx="17" ry="10" fill="#E8E8E8"/><ellipse cx="19" cy="24" rx="6" ry="10" fill="#E8E8E8"/><ellipse cx="51" cy="24" rx="6" ry="10" fill="#E8E8E8"/><ellipse cx="28" cy="30" rx="2.5" ry="2" fill="#2A1808"/><ellipse cx="42" cy="30" rx="2.5" ry="2" fill="#2A1808"/><path d="M25 26 Q28 24 31 26" stroke="#D0A080" stroke-width="1" fill="none"/><path d="M39 26 Q42 24 45 26" stroke="#D0A080" stroke-width="1" fill="none"/><path d="M28 37 Q35 42 42 37" stroke="#B08060" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M28 33 Q35 37 42 33" stroke="#B0A090" stroke-width="2" fill="none" stroke-linecap="round"/><rect x="74" y="90" width="9" height="40" rx="4.5" fill="#C090B0"/><rect x="85" y="90" width="9" height="40" rx="4.5" fill="#C090B0"/><path d="M68 44 L52 134 L100 134 L84 44Z" fill="#D8A8C8"/><rect x="68" y="44" width="32" height="52" rx="10" fill="#D8A8C8"/><rect x="72" y="58" width="24" height="36" rx="6" fill="#F0E0EC"/><rect x="56" y="48" width="12" height="26" rx="6" fill="#D8A8C8"/><rect x="100" y="48" width="12" height="26" rx="6" fill="#D8A8C8"/><ellipse cx="84" cy="32" rx="17" ry="18" fill="#F0D0B0"/><ellipse cx="84" cy="14" rx="16" ry="9" fill="#C0B0A0"/><circle cx="84" cy="8" r="8" fill="#C0B0A0"/><rect x="88" y="6" width="10" height="3" rx="1.5" fill="#E05080"/><ellipse cx="77" cy="30" rx="2.5" ry="2" fill="#2A1808"/><ellipse cx="91" cy="30" rx="2.5" ry="2" fill="#2A1808"/><path d="M77 37 Q84 42 91 37" stroke="#B08060" stroke-width="1.5" fill="none" stroke-linecap="round"/><ellipse cx="73" cy="34" rx="4" ry="3" fill="rgba(240,140,140,.35)"/><ellipse cx="95" cy="34" rx="4" ry="3" fill="rgba(240,140,140,.35)"/><path d="M52 74 Q60 70 68 74" stroke="#F0C090" stroke-width="5" fill="none" stroke-linecap="round"/></svg>`}
+
+function svgBaby(w,h){return`<svg viewBox="0 0 120 140" width="${w||120}" height="${h||140}" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="bg2" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFE8B0" stop-opacity=".5"/><stop offset="100%" stop-color="#FFE8B0" stop-opacity="0"/></radialGradient></defs><ellipse cx="60" cy="90" rx="55" ry="50" fill="url(#bg2)"/><ellipse cx="60" cy="102" rx="36" ry="30" fill="#F0E8D8"/><path d="M28 90 Q40 76 60 74 Q80 76 92 90 Q80 106 60 108 Q40 106 28 90Z" fill="#F4A8C0"/><circle cx="48" cy="86" r="2" fill="rgba(255,255,255,.5)"/><circle cx="60" cy="82" r="2" fill="rgba(255,255,255,.5)"/><circle cx="72" cy="86" r="2" fill="rgba(255,255,255,.5)"/><circle cx="52" cy="94" r="2" fill="rgba(255,255,255,.5)"/><circle cx="68" cy="94" r="2" fill="rgba(255,255,255,.5)"/><circle cx="34" cy="96" r="8" fill="#F4C090"/><circle cx="86" cy="96" r="8" fill="#F4C090"/><circle cx="60" cy="52" r="32" fill="#F4C090"/><path d="M50 22 Q60 14 70 22" stroke="#C08050" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M55 18 Q60 10 65 18" stroke="#C08050" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M46 50 Q52 54 58 50" stroke="#2A1808" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M62 50 Q68 54 74 50" stroke="#2A1808" stroke-width="2.5" fill="none" stroke-linecap="round"/><ellipse cx="60" cy="57" rx="3" ry="2" fill="#E0A878"/><path d="M53 63 Q60 68 67 63" stroke="#C08060" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="44" cy="59" rx="7" ry="5" fill="rgba(240,160,130,.4)"/><ellipse cx="76" cy="59" rx="7" ry="5" fill="rgba(240,160,130,.4)"/><polygon points="20,30 22,36 28,36 23,40 25,46 20,42 15,46 17,40 12,36 18,36" fill="#E8C44A" opacity=".7"/><polygon points="96,24 97.5,28.5 102,28.5 98.5,31.5 100,36 96,33 92,36 93.5,31.5 90,28.5 94.5,28.5" fill="#E8C44A" opacity=".5"/></svg>`}
+
+function svgTitleHero(){return`<svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg"><circle cx="165" cy="28" r="25" fill="#E8C44A" opacity=".1"/><circle cx="174" cy="22" r="20" fill="#0A0E1A"/><circle cx="38" cy="18" r="2" fill="white" opacity=".6"/><circle cx="65" cy="9" r="1.5" fill="white" opacity=".4"/><circle cx="118" cy="7" r="2" fill="white" opacity=".7"/><circle cx="148" cy="28" r="1" fill="white" opacity=".5"/><circle cx="18" cy="48" r="1.5" fill="white" opacity=".3"/><ellipse cx="100" cy="112" rx="80" ry="10" fill="#151830"/><g transform="translate(54,52) scale(0.68)"><rect x="12" y="44" width="10" height="20" rx="5" fill="#2A4A80"/><rect x="30" y="44" width="10" height="20" rx="5" fill="#2A4A80"/><rect x="10" y="22" width="32" height="26" rx="8" fill="#4A80E0"/><rect x="2" y="22" width="10" height="20" rx="5" fill="#4A80E0"/><rect x="40" y="22" width="10" height="20" rx="5" fill="#4A80E0"/><rect x="21" y="17" width="10" height="8" fill="#F4C090"/><ellipse cx="26" cy="14" rx="12" ry="13" fill="#F4C090"/><ellipse cx="26" cy="5" rx="12" ry="7" fill="#3A2010"/><ellipse cx="21" cy="13" rx="2" ry="2.5" fill="#1A1010"/><ellipse cx="31" cy="13" rx="2" ry="2.5" fill="#1A1010"/><path d="M21 18 Q26 22 31 18" stroke="#C07060" stroke-width="1.5" fill="none" stroke-linecap="round"/></g><circle cx="148" cy="72" r="16" fill="#E8C44A" opacity=".08"/><circle cx="148" cy="72" r="9" fill="#E8C44A" opacity=".13"/><circle cx="148" cy="72" r="4" fill="#E8C44A" opacity=".25"/><line x1="96" y1="105" x2="136" y2="82" stroke="#E8C44A" stroke-width="1.5" stroke-dasharray="4,4" opacity=".25"/></svg>`}
+
+/* Enemy SVGs (5 types) */
+const ENEMY_SVGS=[
+  `<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="g0" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#6080FF"/><stop offset="100%" stop-color="#3050CC"/></radialGradient></defs><rect x="12" y="20" width="56" height="60" rx="8" fill="url(#g0)"/><rect x="8" y="26" width="64" height="4" rx="2" fill="#8098FF"/><rect x="8" y="70" width="64" height="4" rx="2" fill="#8098FF"/><rect x="20" y="36" width="40" height="3" rx="1.5" fill="rgba(255,255,255,.3)"/><rect x="20" y="44" width="30" height="3" rx="1.5" fill="rgba(255,255,255,.3)"/><rect x="20" y="52" width="36" height="3" rx="1.5" fill="rgba(255,255,255,.3)"/><rect x="20" y="60" width="24" height="3" rx="1.5" fill="rgba(255,255,255,.3)"/><circle cx="30" cy="20" r="10" fill="#8098FF"/><circle cx="50" cy="20" r="10" fill="#8098FF"/><ellipse cx="32" cy="42" rx="7" ry="8" fill="rgba(0,0,0,.4)"/><ellipse cx="48" cy="42" rx="7" ry="8" fill="rgba(0,0,0,.4)"/><circle cx="33" cy="41" r="3" fill="white"/><circle cx="49" cy="41" r="3" fill="white"/><circle cx="34" cy="40" r="1.5" fill="#1A1A3A"/><circle cx="50" cy="40" r="1.5" fill="#1A1A3A"/><path d="M30 56 Q40 62 50 56" stroke="rgba(255,255,255,.6)" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="40" cy="50" r="36" fill="none" stroke="#6080FF" stroke-width="1" opacity=".3"/></svg>`,
+  `<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="g1" cx="40%" cy="40%" r="60%"><stop offset="0%" stop-color="#90D8F8"/><stop offset="100%" stop-color="#50A8D8"/></radialGradient></defs><circle cx="20" cy="90" r="5" fill="#70C8E8" opacity=".7"/><circle cx="28" cy="82" r="7" fill="#70C8E8" opacity=".8"/><circle cx="38" cy="72" r="10" fill="#70C8E8" opacity=".9"/><circle cx="25" cy="50" r="18" fill="url(#g1)"/><circle cx="42" cy="38" r="22" fill="url(#g1)"/><circle cx="58" cy="52" r="18" fill="url(#g1)"/><circle cx="42" cy="62" r="20" fill="url(#g1)"/><ellipse cx="40" cy="55" rx="26" ry="18" fill="url(#g1)"/><text x="29" y="58" font-family="serif" font-size="26" fill="rgba(255,255,255,.9)" font-weight="bold">?</text><circle cx="30" cy="46" r="4" fill="rgba(0,60,100,.5)"/><circle cx="50" cy="46" r="4" fill="rgba(0,60,100,.5)"/><circle cx="31" cy="45" r="1.5" fill="white"/><circle cx="51" cy="45" r="1.5" fill="white"/></svg>`,
+  `<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="g2" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#F8D050"/><stop offset="100%" stop-color="#E88020"/></radialGradient><radialGradient id="gw2" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#F8D050" stop-opacity=".4"/><stop offset="100%" stop-color="transparent"/></radialGradient></defs><circle cx="40" cy="55" r="40" fill="url(#gw2)"/><rect x="37" y="4" width="6" height="14" rx="3" fill="#C07020"/><ellipse cx="40" cy="55" rx="26" ry="38" fill="url(#g2)"/><ellipse cx="40" cy="38" rx="26" ry="4" fill="rgba(0,0,0,.15)"/><ellipse cx="40" cy="55" rx="26" ry="4" fill="rgba(0,0,0,.15)"/><ellipse cx="40" cy="72" rx="26" ry="4" fill="rgba(0,0,0,.15)"/><ellipse cx="40" cy="90" rx="18" ry="6" fill="#C07020"/><ellipse cx="40" cy="20" rx="20" ry="6" fill="#C07020"/><ellipse cx="30" cy="50" rx="6" ry="7" fill="rgba(0,0,0,.35)"/><ellipse cx="50" cy="50" rx="6" ry="7" fill="rgba(0,0,0,.35)"/><ellipse cx="31" cy="49" rx="2" ry="2" fill="white"/><ellipse cx="51" cy="49" rx="2" ry="2" fill="white"/><path d="M28 62 Q40 70 52 62" stroke="rgba(0,0,0,.4)" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`,
+  `<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="g3" cx="50%" cy="60%" r="50%"><stop offset="0%" stop-color="#80D870"/><stop offset="100%" stop-color="#40A030"/></radialGradient></defs><path d="M22 78 L18 100 L62 100 L58 78Z" fill="#C07040"/><rect x="16" y="72" width="48" height="8" rx="4" fill="#D08050"/><ellipse cx="40" cy="72" rx="24" ry="6" fill="#5A3820"/><rect x="37" y="28" width="6" height="46" rx="3" fill="#50A830"/><ellipse cx="18" cy="52" rx="20" ry="12" fill="url(#g3)" transform="rotate(-25 18 52)"/><ellipse cx="62" cy="46" rx="20" ry="12" fill="url(#g3)" transform="rotate(25 62 46)"/><ellipse cx="24" cy="32" rx="18" ry="10" fill="url(#g3)" transform="rotate(-35 24 32)"/><circle cx="40" cy="22" r="16" fill="#F8D050"/><circle cx="40" cy="14" r="8" fill="#F8A030"/><circle cx="50" cy="18" r="8" fill="#F8A030"/><circle cx="54" cy="28" r="8" fill="#F8A030"/><circle cx="48" cy="36" r="8" fill="#F8A030"/><circle cx="38" cy="38" r="8" fill="#F8A030"/><circle cx="28" cy="32" r="8" fill="#F8A030"/><circle cx="26" cy="22" r="8" fill="#F8A030"/><circle cx="32" cy="14" r="8" fill="#F8A030"/><circle cx="40" cy="24" r="12" fill="#F8E060"/><ellipse cx="35" cy="22" rx="3" ry="3.5" fill="#2A1808"/><ellipse cx="45" cy="22" rx="3" ry="3.5" fill="#2A1808"/><path d="M34 28 Q40 32 46 28" stroke="#C08030" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>`,
+  `<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="g4" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#C8B0F8"/><stop offset="100%" stop-color="#8060C8"/></radialGradient><radialGradient id="gw4" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#C8B0F8" stop-opacity=".3"/><stop offset="100%" stop-color="transparent"/></radialGradient></defs><ellipse cx="40" cy="50" rx="38" ry="45" fill="url(#gw4)"/><path d="M12 60 Q12 14 40 14 Q68 14 68 60 L68 90 Q58 80 50 90 Q44 80 40 90 Q36 80 30 90 Q22 80 12 90 Z" fill="url(#g4)"/><path d="M18 60 Q18 20 40 20 Q62 20 62 60 L62 75 Q54 68 48 75 Q44 68 40 75 Q36 68 32 75 Q26 68 18 75 Z" fill="rgba(255,255,255,.12)"/><ellipse cx="30" cy="46" rx="8" ry="10" fill="rgba(0,0,0,.5)"/><ellipse cx="50" cy="46" rx="8" ry="10" fill="rgba(0,0,0,.5)"/><ellipse cx="31" cy="44" rx="3" ry="3" fill="white"/><ellipse cx="51" cy="44" rx="3" ry="3" fill="white"/><circle cx="22" cy="28" r="2" fill="rgba(255,255,255,.5)"/><circle cx="58" cy="24" r="1.5" fill="rgba(255,255,255,.4)"/><circle cx="65" cy="36" r="2" fill="rgba(255,255,255,.6)"/></svg>`
+];
+
+/* ══════════════════════════════════════════
+   QUESTION POOL (210問)
+══════════════════════════════════════════ */
+const ALL_QS = [
+  // ── 妊娠・出産 ──
+  {q:"妊娠期間は\n約何週間？",enemy:0,nm:"にんしんの精",lv:5,opts:["約30週","約36週","約40週","約48週"],ans:2,ok:"正解！\n妊娠期間は約40週（280日）です。\n最終月経の初日から数えます。",ng:"不正解…\n正しくは約40週（280日）です。"},
+  {q:"つわりが始まるのは\n一般的に妊娠何週頃？",enemy:1,nm:"つわりの精",lv:4,opts:["1〜3週","4〜8週","10〜14週","16週以降"],ans:1,ok:"正解！\n妊娠4〜8週頃に始まることが多いです。\n個人差もあります。",ng:"不正解…\n正しくは4〜8週頃が多いです。"},
+  {q:"妊娠中に特に\n摂取を推奨される栄養素は？",enemy:2,nm:"ようさんの精",lv:5,opts:["ビタミンC","葉酸（ようさん）","カルシウム","鉄分"],ans:1,ok:"正解！\n葉酸は神経管閉鎖障害の予防に重要です。\n妊娠前から摂取することが推奨されています。",ng:"不正解…\n正しくは葉酸です。\n妊娠前から摂取しましょう。"},
+  {q:"母子手帳を\nもらうのはいつ？",enemy:3,nm:"ぼしてちょうの精",lv:3,opts:["妊娠が分かったらすぐ","妊娠8週頃（2ヶ月）","妊娠12週頃（3ヶ月）","安定期（5ヶ月）以降"],ans:1,ok:"正解！\n妊娠8週頃（2ヶ月）に住所地の市区町村で\nもらうのが一般的です。",ng:"不正解…\n妊娠8週頃に市区町村の窓口でもらいます。"},
+  {q:"胎動を感じ始めるのは\n一般的に何ヶ月頃？",enemy:4,nm:"たいどうの精",lv:5,opts:["妊娠3ヶ月頃","妊娠5ヶ月頃","妊娠7ヶ月頃","妊娠9ヶ月頃"],ans:1,ok:"正解！\n初産婦は5ヶ月頃、経産婦は4ヶ月頃から\n感じることが多いです。",ng:"不正解…\n正しくは5ヶ月頃が目安です。"},
+  {q:"妊娠中に避けるべき\n食べ物はどれ？",enemy:0,nm:"きんしょくの精",lv:4,opts:["豆腐","生牡蠣・刺身","ほうれん草","バナナ"],ans:1,ok:"正解！\n生牡蠣や刺身などの生ものは\n食中毒リスクがあるため避けましょう。",ng:"不正解…\n生ものは食中毒リスクがあるため\n妊娠中は避けるべきです。"},
+  {q:"「逆子」の正式名称は？",enemy:1,nm:"さかごの精",lv:6,opts:["臀位（でんい）","頭位（とうい）","斜位（しゃい）","横位（おうい）"],ans:0,ok:"正解！\n逆子は「骨盤位」または「臀位」と呼ばれます。\nお尻や足が下に向いた状態です。",ng:"不正解…\n正しくは「臀位（でんい）」です。\n頭位が正常な向きです。"},
+  {q:"陣痛の間隔が\n何分になったら病院へ？",enemy:2,nm:"じんつうの精",lv:6,opts:["30分おき","20分おき","10分おき","5分おき"],ans:2,ok:"正解！\n陣痛が10分おきになったら\n病院に連絡・向かうのが目安です。",ng:"不正解…\n正しくは10分おきが目安です。\n初産婦は早めの連絡を。"},
+  {q:"赤ちゃんが子宮から\n出てくる正常な向きは？",enemy:3,nm:"しゅっさんの精",lv:7,opts:["顔から先に出る","後頭部を下にして出る","足から先に出る","肩から先に出る"],ans:1,ok:"正解！\n正常分娩では後頭部を下にした\n「後頭位」で産道を通ります。",ng:"不正解…\n正しくは後頭部を下にして出る「後頭位」です。"},
+  {q:"産後の入院期間は\n経腟分娩で通常何日？",enemy:4,nm:"にゅういんの精",lv:4,opts:["1〜2日","3〜5日","7〜10日","2週間"],ans:1,ok:"正解！\n経腟分娩では産後3〜5日が一般的です。\n帝王切開の場合は7〜10日程度です。",ng:"不正解…\n経腟分娩では3〜5日が一般的です。"},
+  {q:"新生児黄疸が\n現れやすいのはいつ？",enemy:0,nm:"おうだんの精",lv:6,opts:["生後1〜2日","生後2〜5日","生後7〜10日","生後2週間以降"],ans:1,ok:"正解！\n生後2〜5日頃に多く現れます。\n生理的黄疸は通常2週間以内に消えます。",ng:"不正解…\n正しくは生後2〜5日頃です。"},
+  {q:"破水とはどのような\n状態のこと？",enemy:1,nm:"はすいの精",lv:5,opts:["お腹が硬くなる","羊膜が破れ羊水が出る","胎盤が剥がれる","子宮口が開く"],ans:1,ok:"正解！\n羊膜が破れて羊水が流れ出る状態です。\n破水したらすぐに病院へ連絡しましょう。",ng:"不正解…\n破水とは羊膜が破れ羊水が出ることです。"},
+  {q:"「帝王切開」が選択される\n主な理由でないものは？",enemy:2,nm:"ていおうの精",lv:7,opts:["前置胎盤","逆子","双子・多胎","産後の体型維持"],ans:3,ok:"正解！\n産後の体型維持は帝王切開の医学的理由では\nありません。前置胎盤・逆子・多胎などが主な理由です。",ng:"不正解…\n産後の体型維持は医学的理由ではありません。"},
+  {q:"妊娠中に過剰摂取を\n避けるべき魚は？",enemy:3,nm:"すいぎんの精",lv:7,opts:["サーモン","マグロ（本まぐろ）","サバ","いわし"],ans:1,ok:"正解！\n本マグロや深海魚には水銀が多く含まれます。\n週に1〜2回程度に控えましょう。",ng:"不正解…\n本マグロなどは水銀が多いため\n妊娠中は量を控えましょう。"},
+  {q:"超音波検査で心拍を\n確認できるのは妊娠何週頃？",enemy:4,nm:"しんぱくの精",lv:5,opts:["妊娠2〜3週","妊娠6〜7週","妊娠10〜12週","妊娠16週以降"],ans:1,ok:"正解！\n妊娠6〜7週頃に心拍を確認できます。\n心拍確認で流産リスクが大幅に下がります。",ng:"不正解…\n正しくは妊娠6〜7週頃です。"},
+  {q:"新生児の\n平均体重は？",enemy:1,nm:"たいじゅうの精",lv:3,opts:["1.5〜2kg","2〜2.5kg","3〜3.5kg","4〜4.5kg"],ans:2,ok:"正解！\n日本の新生児の平均は約3〜3.5kgです。",ng:"不正解…\n正しくは3〜3.5kgです。"},
+  {q:"新生児の平均\n身長は？",enemy:0,nm:"しんちょうの精",lv:3,opts:["約40cm","約50cm","約60cm","約70cm"],ans:1,ok:"正解！\n新生児の平均身長は約50cmです。\n1年で約1.5倍になります。",ng:"不正解…\n正しくは約50cmです。"},
+  {q:"妊娠初期に\n避けるべきことは？",enemy:2,nm:"あんせいの精",lv:4,opts:["軽いウォーキング","激しい運動・飲酒","妊婦健診","葉酸サプリの摂取"],ans:1,ok:"正解！\n激しい運動や飲酒は流産リスクを高めます。\n妊娠中の飲酒に「安全量」はありません。",ng:"不正解…\n激しい運動と飲酒は避けましょう。\nアルコールは胎児に影響します。"},
+  {q:"「安定期」に入るのは\n妊娠何ヶ月頃？",enemy:3,nm:"あんていきの精",lv:4,opts:["妊娠2ヶ月（8週）","妊娠3ヶ月（12週）","妊娠5ヶ月（16週）","妊娠7ヶ月（24週）"],ans:2,ok:"正解！\n妊娠5ヶ月（16週）頃から安定期に入ります。\n流産リスクが低下する時期です。",ng:"不正解…\n正しくは妊娠5ヶ月（16週）頃からです。"},
+  {q:"臍帯（へその緒）の\n主な役割は？",enemy:4,nm:"さいたいの精",lv:6,opts:["赤ちゃんの体を固定する","酸素・栄養を胎児に届ける","羊水の温度を保つ","子宮収縮を促す"],ans:1,ok:"正解！\n臍帯は胎盤から酸素・栄養を届け\n二酸化炭素・老廃物を母体に戻す管です。",ng:"不正解…\n臍帯は酸素・栄養を届ける役割を持ちます。"},
+  // ── 赤ちゃんの発達 ──
+  {q:"新生児の1日の\n平均睡眠時間は？",enemy:1,nm:"ねむりのせいれい",lv:3,opts:["8〜10時間","12〜14時間","16〜18時間","20〜22時間"],ans:2,ok:"正解！\n新生児は16〜18時間眠ります。\n睡眠中に成長ホルモンが分泌されます。",ng:"不正解…\n正しくは16〜18時間です。\n新生児はほぼ眠っています。"},
+  {q:"赤ちゃんが初めて\nニコッと笑うのは？",enemy:2,nm:"えがおのせいれい",lv:5,opts:["0〜1ヶ月","1〜2ヶ月","4〜5ヶ月","8〜9ヶ月"],ans:1,ok:"正解！\n生後1〜2ヶ月に現れる「社会的微笑」。\n育児最大の喜びのひとつです。",ng:"不正解…\n正しくは1〜2ヶ月頃です。\n「社会的微笑」と呼ばれます。"},
+  {q:"首が据わるのは\n一般的に何ヶ月頃？",enemy:0,nm:"くびすわりのせいれい",lv:6,opts:["1〜2ヶ月","3〜4ヶ月","6〜7ヶ月","9〜10ヶ月"],ans:1,ok:"正解！\n生後3〜4ヶ月頃が目安です。\n縦抱きが楽になります。",ng:"不正解…\n正しくは3〜4ヶ月頃です。"},
+  {q:"寝返りを打ち始める\n月齢は一般的に？",enemy:3,nm:"ねがえりの精",lv:5,opts:["1〜2ヶ月","2〜3ヶ月","4〜6ヶ月","8〜9ヶ月"],ans:2,ok:"正解！\n生後4〜6ヶ月頃に寝返りを始めます。\n最初は片側だけのことが多いです。",ng:"不正解…\n正しくは4〜6ヶ月頃です。"},
+  {q:"お座りができるように\nなるのは何ヶ月頃？",enemy:4,nm:"おすわりの精",lv:6,opts:["3〜4ヶ月","5〜6ヶ月","6〜8ヶ月","10〜12ヶ月"],ans:2,ok:"正解！\n生後6〜8ヶ月頃にひとりでお座りできます。\n背中を支える筋肉が発達した証拠です。",ng:"不正解…\n正しくは6〜8ヶ月頃です。"},
+  {q:"ハイハイを始める\n平均的な月齢は？",enemy:4,nm:"はいはいの精",lv:7,opts:["3〜4ヶ月","5〜6ヶ月","7〜8ヶ月","11〜12ヶ月"],ans:2,ok:"正解！\n7〜8ヶ月頃が一般的です。\n全身運動で脳の発達にも効果的。",ng:"不正解…\n正しくは7〜8ヶ月頃です。"},
+  {q:"つかまり立ちを\n始めるのは？",enemy:0,nm:"つかまりだちの精",lv:7,opts:["5〜6ヶ月","7〜8ヶ月","8〜10ヶ月","12〜13ヶ月"],ans:2,ok:"正解！\n生後8〜10ヶ月頃につかまり立ちを始めます。\n転倒対策をしっかりしましょう。",ng:"不正解…\n正しくは8〜10ヶ月頃です。"},
+  {q:"ひとりで立つのは\n何ヶ月頃？",enemy:4,nm:"ひとりだちの精",lv:8,opts:["6〜7ヶ月","8〜9ヶ月","10〜12ヶ月","14〜15ヶ月"],ans:2,ok:"正解！\n10〜12ヶ月頃が目安です。\n個人差があるので焦らず見守りましょう。",ng:"不正解…\n正しくは10〜12ヶ月頃です。"},
+  {q:"赤ちゃんが初めて\n歩くのは一般的にいつ？",enemy:4,nm:"あんよの精",lv:7,opts:["生後6〜8ヶ月","生後9〜10ヶ月","1歳前後","1歳半〜2歳"],ans:2,ok:"正解！\n1歳前後（11〜13ヶ月頃）が目安です。\n個人差があるので焦らず見守りましょう。",ng:"不正解…\n正しくは1歳前後です。"},
+  {q:"赤ちゃんの視力は\n生まれた直後どれくらい？",enemy:2,nm:"みるめの精",lv:5,opts:["約0.001","約0.02","約0.3","ほぼ大人と同じ"],ans:1,ok:"正解！\n生まれたての視力は約0.02。\nぼんやりとしか見えていません。",ng:"不正解…\n正しくは約0.02です。"},
+  {q:"赤ちゃんが初めて\n言葉を話すのは？",enemy:0,nm:"ことばの精",lv:5,opts:["生後6ヶ月頃","生後9ヶ月頃","1歳前後","2歳頃"],ans:2,ok:"正解！\n初語（最初の言葉）は1歳前後が一般的です。\n「ママ」「パパ」など。",ng:"不正解…\n正しくは1歳前後が一般的です。"},
+  {q:"バイバイなどの\n「まねっこ」をするのは？",enemy:2,nm:"まねっこの精",lv:6,opts:["生後3〜4ヶ月","生後5〜6ヶ月","生後9〜10ヶ月","1歳半頃"],ans:2,ok:"正解！\n模倣行動は生後9〜10ヶ月頃から。\nコミュニケーションの第一歩です！",ng:"不正解…\n正しくは生後9〜10ヶ月頃です。"},
+  {q:"赤ちゃんの歯が\n生え始めるのは？",enemy:1,nm:"はえはじめの精",lv:5,opts:["生後2〜3ヶ月","生後6〜8ヶ月","生後10〜12ヶ月","1歳半頃"],ans:1,ok:"正解！\n最初の歯は生後6〜8ヶ月頃に生えます。\n下の前歯から生えることが多いです。",ng:"不正解…\n正しくは生後6〜8ヶ月頃です。"},
+  {q:"乳歯が生え揃うのは\n何歳頃？",enemy:3,nm:"にゅうしの精",lv:6,opts:["1歳半","2歳〜2歳半","3歳頃","4歳頃"],ans:1,ok:"正解！\n乳歯は全部で20本。\n2歳〜2歳半頃に生え揃います。",ng:"不正解…\n正しくは2歳〜2歳半頃です。"},
+  {q:"「喃語（なんご）」が\n始まるのは？",enemy:4,nm:"なんごの精",lv:5,opts:["生後1ヶ月頃","生後2〜3ヶ月頃","生後6〜8ヶ月頃","1歳頃"],ans:1,ok:"正解！\n「アー」「ウー」などの喃語は\n生後2〜3ヶ月頃から始まります。",ng:"不正解…\n正しくは生後2〜3ヶ月頃からです。"},
+  {q:"「指さし」が始まるのは\n何ヶ月頃？",enemy:0,nm:"ゆびさしの精",lv:7,opts:["生後5〜6ヶ月","生後7〜8ヶ月","生後9〜12ヶ月","1歳半頃"],ans:2,ok:"正解！\n指さしは生後9〜12ヶ月頃から見られます。\n言語発達の重要なサインです。",ng:"不正解…\n正しくは生後9〜12ヶ月頃です。"},
+  {q:"体重が出生時の\n2倍になるのはいつ頃？",enemy:1,nm:"せいちょうの精",lv:5,opts:["生後1ヶ月","生後3ヶ月","生後5ヶ月","生後8ヶ月"],ans:1,ok:"正解！\n生後3ヶ月頃に出生体重の約2倍になります。\n赤ちゃんの成長は驚くほど速いです。",ng:"不正解…\n正しくは生後3ヶ月頃です。"},
+  {q:"体重が出生時の\n3倍になるのはいつ頃？",enemy:2,nm:"3ばいの精",lv:5,opts:["生後6ヶ月","1歳頃","1歳半","2歳"],ans:1,ok:"正解！\n1歳頃に出生体重の約3倍になります。\n出生3kg→1歳9kgが目安です。",ng:"不正解…\n正しくは1歳頃です。"},
+  {q:"鏡の中の自分を\n認識できるのは？",enemy:3,nm:"かがみの精",lv:7,opts:["生後3ヶ月","生後6ヶ月","生後9ヶ月","1歳半〜2歳"],ans:3,ok:"正解！\n自己認識（ミラーテスト）は\n1歳半〜2歳頃に確立します。",ng:"不正解…\n正しくは1歳半〜2歳頃です。"},
+  {q:"分離不安が強く\n現れるのはいつ頃？",enemy:4,nm:"ぶんりの精",lv:6,opts:["生後1〜2ヶ月","生後4〜5ヶ月","生後8〜10ヶ月","2歳以降"],ans:2,ok:"正解！\n生後8〜10ヶ月頃に人見知り・分離不安が\nピークになります。愛着形成の証拠です。",ng:"不正解…\n正しくは生後8〜10ヶ月頃です。"},
+  {q:"二語文（「パパ来た」など）\nを話し始めるのは？",enemy:0,nm:"にごぶんの精",lv:6,opts:["1歳頃","1歳半〜2歳頃","2歳半〜3歳頃","4歳頃"],ans:1,ok:"正解！\n1歳半〜2歳頃に二語文が出始めます。\n言語発達の大きなマイルストーンです。",ng:"不正解…\n正しくは1歳半〜2歳頃です。"},
+  {q:"頭頂部の柔らかい\n「大泉門」が閉じるのは？",enemy:4,nm:"だいせんもんの精",lv:6,opts:["生後3ヶ月","生後6ヶ月","生後18ヶ月頃","3歳頃"],ans:2,ok:"正解！\n大泉門は生後18ヶ月頃に閉じます。\nデリケートな部分なので優しく触りましょう。",ng:"不正解…\n正しくは生後18ヶ月頃です。"},
+  {q:"赤ちゃんが自分の名前に\n反応するのは？",enemy:1,nm:"なまえの精",lv:5,opts:["生後1〜2ヶ月","生後3〜4ヶ月","生後5〜6ヶ月","生後9〜10ヶ月"],ans:2,ok:"正解！\n生後5〜6ヶ月頃から自分の名前に\n反応するようになります。",ng:"不正解…\n正しくは生後5〜6ヶ月頃です。"},
+  {q:"腹ばいの練習（タミータイム）は\nいつから始める？",enemy:2,nm:"うつぶせの精",lv:5,opts:["生後1週間から","生後1ヶ月頃から","生後3ヶ月から","首がすわってから"],ans:1,ok:"正解！\n首がすわり始める生後1ヶ月頃から、\n短時間の腹ばい練習を始められます。",ng:"不正解…\n正しくは生後1ヶ月頃からです。"},
+  // ── 育児・お世話 ──
+  {q:"おむつを交換する\n目安の頻度は？",enemy:3,nm:"おむつの精",lv:3,opts:["1日2〜3回","1日5〜6回","1日8〜12回","都度すぐ替える"],ans:3,ok:"正解！\n濡れたらすぐ替えることが大切です。\n放置するとかぶれの原因になります。",ng:"不正解…\n正しくはぬれたらすぐ替えることです。"},
+  {q:"沐浴（もくよく）の\nお湯の温度は？",enemy:0,nm:"もくよくの精",lv:4,opts:["35〜36度","38〜40度","42〜44度","46〜48度"],ans:1,ok:"正解！\n38〜40度がちょうど良い温度です。\n肘でぬるめを確認してから入れましょう。",ng:"不正解…\n正しくは38〜40度です。\n熱すぎに注意しましょう。"},
+  {q:"沐浴を卒業して\n湯船に入れるのは？",enemy:3,nm:"にゅうよくの精",lv:4,opts:["生後3日","生後1週間","生後1ヶ月頃","生後6ヶ月"],ans:2,ok:"正解！\nお宮参りの後（生後1ヶ月頃）が目安です。\nへその緒が取れてから。",ng:"不正解…\n正しくは生後1ヶ月頃（お宮参の後）です。"},
+  {q:"哺乳瓶でミルクを飲んだ後\n必ず行うことは？",enemy:1,nm:"げっぷの精",lv:3,opts:["すぐ寝かせる","ゲップを出させる","水を飲ませる","お腹をマッサージする"],ans:1,ok:"正解！\nゲップを出させないと吐き戻しの原因に。\n縦抱きにして背中を優しく叩きましょう。",ng:"不正解…\n正しくはゲップを出させることです。"},
+  {q:"母乳の授乳間隔の\n目安は新生児期？",enemy:2,nm:"じゅにゅうの精",lv:4,opts:["3〜4時間おき","2〜3時間おき","欲しがるたびに","1時間おき"],ans:2,ok:"正解！\n母乳は欲しがるたびに与えるのが基本です。\n新生児は2〜3時間おきが一般的。",ng:"不正解…\n母乳は「欲しがるたびに」が基本です。"},
+  {q:"粉ミルクの調乳に\n使うお湯の温度は？",enemy:3,nm:"ちょうにゅうの精",lv:5,opts:["40〜50度","60〜70度","70度以上","沸騰したまま"],ans:2,ok:"正解！\nWHOは70度以上のお湯での調乳を推奨。\nサカザキ菌などの殺菌のためです。",ng:"不正解…\n正しくは70度以上です。\nWHO推奨の温度です。"},
+  {q:"赤ちゃんをうつぶせで\n寝かせてはいけない理由は？",enemy:4,nm:"うつぶせのおに",lv:6,opts:["首がまだ弱いから","SIDSのリスクが高まるから","熱がこもるから","消化に悪いから"],ans:1,ok:"正解！\nうつぶせ寝は乳幼児突然死症候群（SIDS）の\nリスクを高めます。仰向けで寝かせましょう。",ng:"不正解…\nうつぶせ寝はSIDSのリスクが高まるためです。"},
+  {q:"赤ちゃんの爪を\n切るタイミングは？",enemy:0,nm:"つめきりの精",lv:3,opts:["1週間に1回","2週間に1回","伸びてきたらその都度","月に1回"],ans:2,ok:"正解！\n赤ちゃんの爪は早く伸びます。\n伸びてきたら顔を傷つける前に切りましょう。",ng:"不正解…\n正しくは伸びてきたらその都度切ります。"},
+  {q:"赤ちゃんの体温を\n測る場所として正確なのは？",enemy:1,nm:"たいおんの精",lv:4,opts:["口の中（口腔）","わきの下（腋窩）","おでこ","お腹"],ans:1,ok:"正解！\n日本では腋窩（わきの下）で測るのが一般的。\n安静にして1分程度測ります。",ng:"不正解…\n正しくはわきの下（腋窩）です。"},
+  {q:"赤ちゃんが発熱と判断する\n体温の目安は？",enemy:2,nm:"ねつの精",lv:5,opts:["37.0度以上","37.5度以上","38.0度以上","38.5度以上"],ans:2,ok:"正解！\n腋窩で38.0度以上を発熱と判断します。\n38.5度以上でかかりつけ医への連絡を。",ng:"不正解…\n正しくは38.0度以上が発熱の目安です。"},
+  {q:"哺乳瓶の消毒方法として\n正しくないのは？",enemy:3,nm:"しょうどくの精",lv:5,opts:["煮沸消毒","薬液消毒","電子レンジ消毒","水洗いのみ"],ans:3,ok:"正解！\n水洗いだけでは不十分です。\n煮沸・薬液・レンジ消毒のどれかを選びましょう。",ng:"不正解…\n水洗いだけでは消毒になりません。"},
+  {q:"チャイルドシートの\n着用は法律で義務付けられているのは？",enemy:4,nm:"ちゃいるどの精",lv:4,opts:["6歳未満","10歳未満","12歳未満","身長140cm未満"],ans:0,ok:"正解！\n6歳未満の子どものチャイルドシート着用は\n道路交通法で義務付けられています。",ng:"不正解…\n正しくは6歳未満です。\n法律で義務付けられています。"},
+  {q:"赤ちゃんに絵本を\n読み聞かせるのはいつから？",enemy:0,nm:"えほんの精",lv:3,opts:["言葉がわかる1歳から","生後3ヶ月から","新生児のうちから","ハイハイを始めてから"],ans:2,ok:"正解！\n新生児のうちから読み聞かせOKです。\n声のリズムや温かさが赤ちゃんに伝わります。",ng:"不正解…\n正しくは新生児から始められます。"},
+  {q:"赤ちゃんの歯磨きを\n始めるのはいつ頃？",enemy:1,nm:"はみがきの精",lv:5,opts:["生後3ヶ月","歯が生え始めたら","1歳になってから","2歳になってから"],ans:1,ok:"正解！\n歯が生え始めたら歯磨きをスタート。\n最初はガーゼで拭く程度からでもOKです。",ng:"不正解…\n正しくは歯が生え始めたらです。"},
+  {q:"おしゃぶりを使い続けると\n注意すべき点は？",enemy:2,nm:"おしゃぶりの精",lv:6,opts:["消化不良になる","歯並びや噛み合わせへの影響","睡眠が浅くなる","言語発達が早くなりすぎる"],ans:1,ok:"正解！\nおしゃぶりの長期使用は歯並び・噛み合わせに\n影響することがあります。1歳を目安に検討を。",ng:"不正解…\n歯並びや噛み合わせへの影響が懸念されます。"},
+  {q:"赤ちゃんの部屋の\n適切な湿度は？",enemy:3,nm:"しつどの精",lv:5,opts:["20〜30%","40〜60%","70〜80%","90%以上"],ans:1,ok:"正解！\n湿度40〜60%が快適な環境です。\n乾燥しすぎると鼻や喉が傷みやすくなります。",ng:"不正解…\n正しくは40〜60%です。"},
+  {q:"抱っこひもを\n使い始められるのはいつから？",enemy:4,nm:"だっこひもの精",lv:4,opts:["生後すぐ（新生児対応の場合）","首がすわってから（3〜4ヶ月）","お座りができてから","つかまり立ちから"],ans:0,ok:"正解！\n新生児対応の抱っこひもなら\n生後すぐから使えます。説明書を確認しましょう。",ng:"不正解…\n新生児対応モデルなら生後すぐから使えます。"},
+  {q:"ベビーカーを\n使い始められるのはいつから？",enemy:0,nm:"べびーかーの精",lv:4,opts:["生後1週間","生後1ヶ月頃","首がすわる3〜4ヶ月以降","お座りができてから"],ans:1,ok:"正解！\nA型ベビーカーは生後1ヶ月頃から使えます。\nB型は腰がすわる7ヶ月頃から。",ng:"不正解…\nA型ベビーカーは生後1ヶ月から使えます。"},
+  {q:"赤ちゃんに触れる前に\n大切なことは？",enemy:1,nm:"てあらいの精",lv:2,opts:["手を温める","手を洗う","爪を切る","消毒する"],ans:1,ok:"正解！\n手洗いは感染症予防の基本中の基本です。\n石けんで20秒以上しっかり洗いましょう。",ng:"不正解…\nまず手を洗うことが大切です。"},
+  {q:"新生児の授乳回数の\n目安は1日に？",enemy:2,nm:"じゅにゅうかいすうの精",lv:3,opts:["2〜3回","4〜5回","8〜12回","15回以上"],ans:2,ok:"正解！\n新生児は1日8〜12回程度の授乳が目安。\n夜中も含め欲しがるたびに与えましょう。",ng:"不正解…\n正しくは1日8〜12回程度です。"},
+  {q:"沐浴の時間の目安は？",enemy:3,nm:"もくよくじかんの精",lv:3,opts:["30秒〜1分","5〜10分","15〜20分","30分以上"],ans:1,ok:"正解！\n沐浴は5〜10分程度が目安です。\n長すぎると体が冷えます。",ng:"不正解…\n正しくは5〜10分程度です。"},
+  {q:"おむつかぶれの\n予防として正しいのは？",enemy:4,nm:"かぶれの精",lv:4,opts:["おむつを厚くする","こまめに交換し清潔を保つ","お湯で毎回洗い流す","おむつを緩めに当てる"],ans:1,ok:"正解！\nこまめなおむつ交換と清潔を保つことが大切。\n市販のおしりふきより水で洗うのも効果的。",ng:"不正解…\n正しくはこまめに交換し清潔を保つことです。"},
+  // ── 日本の行事・文化 ──
+  {q:"「お七夜」とは\nどんな行事？",enemy:3,nm:"めいめいのせいれい",lv:4,opts:["初入浴の儀式","命名式・名前披露","初めてのお宮参り","ハーフバースデー"],ans:1,ok:"正解！\n生後7日目に名前を披露する命名式。\n命名紙に名前を書いて飾ります。",ng:"不正解…\n正しくは命名式です。\n生後7日目の行事です。"},
+  {q:"男の子のお宮参りは\n生後何日目が目安？",enemy:2,nm:"おみやまいりの精",lv:4,opts:["7日目","21日目","31日目","100日目"],ans:2,ok:"正解！\n男の子は31日目、女の子は32〜33日目が目安です。",ng:"不正解…\n正しくは31日目です。"},
+  {q:"お食い初めで使う\n特別な道具は？",enemy:2,nm:"はかための精",lv:6,opts:["特製スプーン","歯固め石","お守りの箸","水晶の椀"],ans:1,ok:"正解！\n歯固め石で「丈夫な歯が生えますように」\nと祈ります。",ng:"不正解…\n正しくは「歯固め石」です。"},
+  {q:"お食い初めは\n生後何日頃に行う？",enemy:1,nm:"おくいぞめの精",lv:5,opts:["生後30日頃","生後50日頃","生後100日頃","生後365日頃"],ans:2,ok:"正解！\nお食い初めは生後100日頃（百日祝い）に\n行います。一生食べ物に困らないよう願います。",ng:"不正解…\n正しくは生後100日頃です。"},
+  {q:"「一升餅」に込められた\n願いは何？",enemy:3,nm:"いっしょうもちの精",lv:5,opts:["長生きを願う","食べ物に困らない","健康を願う","賢く育つ"],ans:1,ok:"正解！\n「一生（一升）食べ物に困らないように」\nという語呂合わせです。",ng:"不正解…\n正しくは「食べ物に困らないように」です。"},
+  {q:"端午の節句は\n何月何日？",enemy:0,nm:"こいのぼりの精",lv:4,opts:["3月3日","4月4日","5月5日","6月6日"],ans:2,ok:"正解！\n5月5日は端午の節句。\nこいのぼりや兜を飾ります。",ng:"不正解…\n正しくは5月5日です。"},
+  {q:"女の子の初節句\n「ひな祭り」は何月何日？",enemy:3,nm:"ひなまつりの精",lv:3,opts:["1月7日","3月3日","7月7日","11月15日"],ans:1,ok:"正解！\n3月3日は桃の節句（ひな祭り）。\nひな人形を飾り女の子の成長を祝います。",ng:"不正解…\n正しくは3月3日です。"},
+  {q:"七五三をお祝いする\n年齢（男の子）は？",enemy:4,nm:"しちごさんの精",lv:4,opts:["3歳と5歳","5歳と7歳","3歳と7歳","3歳・5歳・7歳全部"],ans:0,ok:"正解！\n男の子は3歳と5歳でお祝いします。\n女の子は3歳と7歳です。",ng:"不正解…\n男の子は3歳と5歳です。"},
+  {q:"七夕はいつ？",enemy:0,nm:"たなばたの精",lv:2,opts:["6月6日","7月7日","8月8日","9月9日"],ans:1,ok:"正解！\n7月7日は七夕。\n短冊に願いを書いて笹に飾ります。",ng:"不正解…\n正しくは7月7日です。"},
+  {q:"「初誕生日」の\nお祝い行事といえば？",enemy:1,nm:"たんじょうびの精",lv:4,opts:["お宮参り","一升餅・選び取り","お食い初め","七五三"],ans:1,ok:"正解！\n1歳の誕生日には一升餅を背負ったり\n「選び取り」でその子の将来を占います。",ng:"不正解…\n正しくは一升餅・選び取りです。"},
+  {q:"「ハーフバースデー」とは\n生後何ヶ月のお祝い？",enemy:2,nm:"はーふばーすの精",lv:3,opts:["生後3ヶ月","生後6ヶ月","生後9ヶ月","生後10ヶ月"],ans:1,ok:"正解！\nハーフバースデーは生後6ヶ月（半歳）のお祝い。\n最近人気の記念イベントです。",ng:"不正解…\n正しくは生後6ヶ月です。"},
+  {q:"「百日祝い」は\n何のお祝いとも言う？",enemy:3,nm:"ひゃくにちの精",lv:4,opts:["お宮参り","お食い初め","一升餅","七五三"],ans:1,ok:"正解！\n百日祝い＝お食い初めです。\n生後100日頃に一生食べ物に困らないよう祈ります。",ng:"不正解…\n百日祝いはお食い初めのことです。"},
+  {q:"「内祝い」とは\n何のこと？",enemy:4,nm:"うちいわいの精",lv:5,opts:["身内だけのパーティー","出産祝いへのお返し","産前の食事会","親族への挨拶廻り"],ans:1,ok:"正解！\n出産祝いをいただいたお礼に\n贈るお返しのことを内祝いといいます。",ng:"不正解…\n正しくは出産祝いへのお返しです。"},
+  {q:"「産褥期（さんじょくき）」とは\nいつのこと？",enemy:0,nm:"さんじょくの精",lv:6,opts:["妊娠後期","出産後6〜8週間","出産後1年","授乳期間中"],ans:1,ok:"正解！\n産褥期は出産後6〜8週間のこと。\n子宮が元の大きさに戻る回復期間です。",ng:"不正解…\n正しくは出産後6〜8週間です。"},
+  {q:"節分で豆まきを\nする意味は？",enemy:1,nm:"せつぶんの精",lv:3,opts:["豊作を祈る","邪気（鬼）を払う","子どもの成長を願う","先祖を供養する"],ans:1,ok:"正解！\n節分の豆まきは邪気（鬼）を払い\n福を呼び込む行事です。",ng:"不正解…\n正しくは邪気を払うためです。"},
+  {q:"初正月に男の子へ\n贈る縁起物は？",enemy:2,nm:"はつしょうがつの精",lv:6,opts:["羽子板","破魔弓（はまゆみ）","こいのぼり","兜（かぶと）"],ans:1,ok:"正解！\n男の子には破魔弓、女の子には羽子板を\n初正月に贈る習慣があります。",ng:"不正解…\n正しくは破魔弓（はまゆみ）です。"},
+  {q:"「お宮参り」の\n正式な目的は？",enemy:3,nm:"うぶすなの精",lv:5,opts:["赤ちゃんの性別を神様に報告する","産土神（うぶすなかみ）に参拝し加護を願う","祖父母への紹介の儀式","赤ちゃんの健康診断"],ans:1,ok:"正解！\n産土神（地元の守り神）に参拝し\n赤ちゃんの誕生と健やかな成長を祈ります。",ng:"不正解…\n産土神に誕生を報告し加護を願う行事です。"},
+  // ── 栄養・授乳 ──
+  {q:"「初乳（しょにゅう）」の\n特徴は？",enemy:4,nm:"しょにゅうの精",lv:6,opts:["脂肪分が多い","免疫物質が豊富","甘みが強い","量が多い"],ans:1,ok:"正解！\n初乳には免疫グロブリン（IgA）が豊富。\n赤ちゃんを感染から守る大切な成分が含まれます。",ng:"不正解…\n正しくは免疫物質が豊富です。"},
+  {q:"離乳食を始める\n目安はいつ？",enemy:3,nm:"はじめのごはんの精",lv:5,opts:["1〜2ヶ月","3〜4ヶ月","5〜6ヶ月","8〜9ヶ月"],ans:2,ok:"正解！\n5〜6ヶ月頃が目安です。\nスプーンを舌で押し出さなくなったらサイン。",ng:"不正解…\n正しくは5〜6ヶ月頃です。"},
+  {q:"離乳食初期に\n最初に与える食材は？",enemy:0,nm:"りにゅうしょくの精",lv:5,opts:["すりおろしたにんじん","10倍粥（おかゆ）","裏ごしじゃがいも","野菜スープ"],ans:1,ok:"正解！\n離乳食は10倍粥（おかゆ）からスタート。\n1さじずつ様子を見ながら増やします。",ng:"不正解…\n正しくは10倍粥（おかゆ）からです。"},
+  {q:"離乳食で避けるべき食材は？",enemy:1,nm:"きんしょくの精",lv:6,opts:["かぼちゃ","はちみつ","白米","豆腐"],ans:1,ok:"正解！\nはちみつは1歳未満に与えてはいけません。\nボツリヌス菌の芽胞が含まれ危険です。",ng:"不正解…\n正しくははちみつです。\n1歳未満にはNGです。"},
+  {q:"産後に特に\n不足しやすい栄養素は？",enemy:0,nm:"えいようの精",lv:5,opts:["ビタミンC","タンパク質","鉄分・葉酸","ビタミンD"],ans:2,ok:"正解！\n産後は鉄分・葉酸が不足しやすいです。\nバランスの良い食事を心がけましょう。",ng:"不正解…\n正しくは鉄分・葉酸です。"},
+  {q:"授乳中のアルコール摂取について\n正しいのは？",enemy:2,nm:"アルコールの精",lv:5,opts:["少量なら問題ない","授乳後すぐなら大丈夫","授乳中は飲まないのが原則","ビールは母乳を増やす"],ans:2,ok:"正解！\n授乳中の飲酒は原則NGです。\nアルコールは母乳に移行し赤ちゃんに影響します。",ng:"不正解…\n授乳中の飲酒は原則として避けましょう。"},
+  {q:"母乳が出やすくなる\n食べ物として有名なのは？",enemy:3,nm:"ぼにゅうの精",lv:4,opts:["スパイシーな食べ物","あたたかいスープ・汁物","カフェイン飲料","炭酸飲料"],ans:1,ok:"正解！\n温かい汁物や根菜類が血行を促進し\n母乳の分泌を助けるといわれています。",ng:"不正解…\n温かい汁物や根菜類がおすすめです。"},
+  {q:"「完全母乳」で育てるメリットは？",enemy:4,nm:"かんぜんぼにゅうの精",lv:6,opts:["赤ちゃんの免疫力向上","調乳が不要で経済的","母体の回復が早まる","これらすべて"],ans:3,ok:"正解！\n母乳には免疫強化・コスト節約・\n子宮収縮の促進など多くのメリットがあります。",ng:"不正解…\nこれらすべてが正しいメリットです。"},
+  {q:"離乳食「中期」は\n何ヶ月頃のこと？",enemy:0,nm:"ちゅうきの精",lv:5,opts:["4〜5ヶ月","7〜8ヶ月","10〜11ヶ月","1歳以降"],ans:1,ok:"正解！\n離乳食中期（モグモグ期）は7〜8ヶ月頃。\n舌でつぶせるやわらかさが目安です。",ng:"不正解…\n正しくは7〜8ヶ月（中期）です。"},
+  {q:"鉄分が豊富な\n離乳食食材は？",enemy:1,nm:"てつぶんの精",lv:6,opts:["バナナ","ほうれん草・レバー","白米","じゃがいも"],ans:1,ok:"正解！\nほうれん草・レバーは鉄分が豊富。\n離乳食中期から積極的に取り入れましょう。",ng:"不正解…\n正しくはほうれん草・レバーです。"},
+  {q:"母乳を冷凍保存できる\n目安の期間は？",enemy:2,nm:"ぼにゅうほぞんの精",lv:6,opts:["3日間","1〜2週間","約1ヶ月","3ヶ月以上"],ans:2,ok:"正解！\n母乳は冷凍で約1ヶ月保存できます。\n専用の母乳パックに入れて冷凍します。",ng:"不正解…\n正しくは冷凍で約1ヶ月です。"},
+  {q:"離乳食を1日3回に\n増やすのはいつ頃？",enemy:3,nm:"3かいしょくの精",lv:6,opts:["生後6ヶ月","生後8〜9ヶ月","生後10〜11ヶ月","1歳以降"],ans:2,ok:"正解！\n生後10〜11ヶ月頃から1日3回食に移行。\n大人と同じリズムに近づけていきます。",ng:"不正解…\n正しくは10〜11ヶ月頃からです。"},
+  {q:"牛乳を飲み物として\n飲ませ始めるのはいつから？",enemy:4,nm:"ぎゅうにゅうの精",lv:5,opts:["生後6ヶ月","生後9ヶ月","1歳以降","2歳以降"],ans:2,ok:"正解！\n牛乳を飲み物として飲ませるのは1歳以降から。\n消化器官が未発達なため早すぎはNGです。",ng:"不正解…\n正しくは1歳以降からです。"},
+  {q:"ビタミンDが赤ちゃんに\n必要な理由は？",enemy:0,nm:"びたみんDの精",lv:7,opts:["視力の発達に必要","骨の成長を助ける","免疫機能を高める","脳の発達に必要"],ans:1,ok:"正解！\nビタミンDはカルシウムの吸収を助け\n骨の成長に不可欠です。日光浴も大切。",ng:"不正解…\n正しくは骨の成長を助けるためです。"},
+  // ── 健康・安全 ──
+  {q:"赤ちゃんの体温は\n大人と比べると？",enemy:1,nm:"たいおんの精",lv:3,opts:["低め（35度台）","ほぼ同じ","やや高め（37度前後）","かなり高い（38度以上）"],ans:2,ok:"正解！\n赤ちゃんの平熱は37度前後とやや高め。\n体温調節機能が未発達なためです。",ng:"不正解…\n正しくは37度前後のやや高めです。"},
+  {q:"SIDSの予防として\n有効とされるのは？",enemy:2,nm:"SIDSのおに",lv:7,opts:["うつぶせで寝かせる","仰向けで寝かせる","室温を高くする","厚い布団を使う"],ans:1,ok:"正解！\n仰向けで寝かせることがSIDS予防に有効です。\nうつぶせ寝はリスクを高めます。",ng:"不正解…\n正しくは仰向けで寝かせることです。"},
+  {q:"乳幼児の誤飲事故で\n最も多い原因は？",enemy:3,nm:"ごいんの精",lv:6,opts:["おもちゃのパーツ","薬・錠剤","たばこ","コイン"],ans:2,ok:"正解！\nたばこは乳幼児の誤飲事故で最も多い原因のひとつ。\n手の届かない場所に保管しましょう。",ng:"不正解…\nたばこが最も多い誤飲原因のひとつです。"},
+  {q:"熱性けいれんが起きた時\n最初にすることは？",enemy:4,nm:"けいれんのおに",lv:8,opts:["口の中に何かを入れる","口から物を取り出す","横向きに寝かせ見守る","すぐに冷水をかける"],ans:2,ok:"正解！\n横向きに寝かせ、けいれんが収まるのを見守ります。\n口に物を入れると危険です。救急車を呼ぶ目安も確認を。",ng:"不正解…\n横向きに寝かせ見守ることが正しい対処です。"},
+  {q:"赤ちゃんへの受動喫煙の\n影響として正しいのは？",enemy:0,nm:"きつえんのおに",lv:6,opts:["ほぼ影響はない","SIDS・呼吸器疾患のリスクが高まる","免疫力が上がる","成長が早まる"],ans:1,ok:"正解！\n受動喫煙はSIDS・喘息・中耳炎などの\nリスクを大幅に高めます。禁煙が大切です。",ng:"不正解…\n受動喫煙はSIDSなど多くのリスクを高めます。"},
+  {q:"BCGワクチンは\nいつ接種する？",enemy:1,nm:"BCGの精",lv:6,opts:["生後すぐ（退院前）","生後5〜8週頃","生後3ヶ月〜6ヶ月以内","1歳になってから"],ans:2,ok:"正解！\nBCGは結核の予防ワクチン。\n生後3ヶ月〜6ヶ月以内の接種が推奨されています。",ng:"不正解…\n正しくは生後3〜6ヶ月以内です。"},
+  {q:"ロタウイルスワクチンを\n接種できる期間は？",enemy:2,nm:"ろたの精",lv:7,opts:["いつでも接種可能","生後6週〜24週（または32週）","1歳〜2歳","3歳まで"],ans:1,ok:"正解！\nロタウイルスワクチンは接種できる期間が限られます。\n生後6週〜24週（1価）または32週（5価）が目安。",ng:"不正解…\n正しくは生後6週〜24週（または32週）以内です。"},
+  {q:"赤ちゃんがものを\n誤飲した時の電話相談先は？",enemy:3,nm:"そうだんの精",lv:5,opts:["119番（救急）","中毒110番（中毒情報センター）","110番（警察）","117番（時報）"],ans:1,ok:"正解！\n中毒110番（公益財団法人日本中毒情報センター）に\n電話すると専門家に相談できます。",ng:"不正解…\n中毒110番（中毒情報センター）に相談しましょう。"},
+  {q:"赤ちゃんをお風呂に\n入れる時の転落・溺水予防は？",enemy:4,nm:"おぼれのおに",lv:7,opts:["目を離しても短時間ならOK","絶対に目を離さない","浴槽に水を張ったまま保管してOK","バスチェアに座らせれば安全"],ans:1,ok:"正解！\nわずか数cmの水でも溺水の危険があります。\nお風呂のそばで絶対に目を離さないことが鉄則です。",ng:"不正解…\n絶対に目を離さないことが最重要です。"},
+  {q:"乳幼児の「誤嚥（ごえん）」で\n危険な食べ物は？",enemy:0,nm:"ごえんのおに",lv:6,opts:["バナナ","豆腐","丸いぶどう・ミニトマト","すりおろしにんじん"],ans:2,ok:"正解！\n丸いぶどうやミニトマトは気道をふさぐ恐れがあります。\n半分に切るかつぶしてから与えましょう。",ng:"不正解…\n丸いぶどう・ミニトマトは誤嚥の危険があります。"},
+  {q:"RSウイルスの\n特徴は？",enemy:1,nm:"RSウイルスの精",lv:7,opts:["大人にはうつらない","乳幼児には重篤化リスクがある","夏にだけ流行する","ワクチンで完全予防できる"],ans:1,ok:"正解！\nRSウイルスは1歳以下の赤ちゃんで重症化しやすく\n細気管支炎・肺炎を引き起こすことがあります。",ng:"不正解…\n乳幼児には重篤化リスクがあります。"},
+  {q:"赤ちゃんの「おへそ」が\n取れるのはいつ頃？",enemy:2,nm:"へそのおの精",lv:4,opts:["生後2〜3日","生後1〜2週間","生後1ヶ月","生後3ヶ月"],ans:1,ok:"正解！\nへその緒は生後1〜2週間で自然に取れます。\n清潔に保ちアルコール消毒しましょう。",ng:"不正解…\n正しくは生後1〜2週間頃です。"},
+  {q:"赤ちゃんを車に乗せる際\nチャイルドシートの向きは？",enemy:3,nm:"くるまの精",lv:6,opts:["常に前向き","新生児は後ろ向き","どちらでも同じ","座席なしで抱っこOK"],ans:1,ok:"正解！\n新生児・乳児は後ろ向き（後頭部を進行方向に）が\n安全です。体重・年齢の目安になったら前向きへ。",ng:"不正解…\n新生児は後ろ向きが正しい設置方法です。"},
+  {q:"乳幼児突然死症候群（SIDS）の\nリスクが高い時期は？",enemy:4,nm:"SIDSのおに",lv:7,opts:["生後1週間以内","生後2〜6ヶ月頃","1歳〜2歳","3歳以降"],ans:1,ok:"正解！\nSIDSは生後2〜6ヶ月頃に最も多く発生します。\nこの時期は特に注意が必要です。",ng:"不正解…\n正しくは生後2〜6ヶ月頃が最多です。"},
+  {q:"赤ちゃんへのインフルエンザ\n予防接種は何ヶ月から？",enemy:0,nm:"インフルの精",lv:6,opts:["生後3ヶ月から","生後6ヶ月から","1歳から","3歳から"],ans:1,ok:"正解！\nインフルエンザワクチンは生後6ヶ月から接種可能。\n2回接種が必要で、4週間間隔で行います。",ng:"不正解…\n正しくは生後6ヶ月からです。"},
+  {q:"夜間の救急受診を\n迷った時の相談窓口は？",enemy:1,nm:"きゅうきゅうの精",lv:5,opts:["110番（警察）","#7119（救急安心センター）","119番のみ","かかりつけ医に直接行く"],ans:1,ok:"正解！\n#7119は救急安心センター（救急相談ダイヤル）。\n「救急車を呼ぶべきか」迷った時に電話できます。",ng:"不正解…\n#7119（救急安心センター）に相談できます。"},
+  // ── 妊娠・出産 追加 ──
+  {q:"妊婦健診の費用を\n助成する制度は？",enemy:2,nm:"けんしんじょせいの精",lv:5,opts:["児童手当","妊婦健康診査費用補助","出産育児一時金","育児休業給付"],ans:1,ok:"正解！\n各自治体が妊婦健康診査費用を補助します。\n母子手帳と一緒に受診票がもらえます。",ng:"不正解…\n正しくは妊婦健康診査費用補助（受診票）です。"},
+  {q:"出産育児一時金は\nいくら？",enemy:3,nm:"いちじきんの精",lv:6,opts:["約30万円","約42万円（2024年現在）","約50万円","約60万円"],ans:1,ok:"正解！\n2024年現在、出産育児一時金は50万円です。\n（産科医療補償制度加入の場合）",ng:"不正解…\n2024年現在50万円です（産科医療補償制度加入施設）。"},
+  {q:"産後うつの主な\nリスク要因は？",enemy:4,nm:"さんごうつの精",lv:7,opts:["初産でないこと","孤立・睡眠不足・サポート不足","運動不足","栄養の取り過ぎ"],ans:1,ok:"正解！\n孤立感・慢性的な睡眠不足・\n周囲のサポート不足が産後うつの主なリスクです。",ng:"不正解…\n孤立・睡眠不足・サポート不足が主なリスクです。"},
+  {q:"里帰り出産で帰省するのは\n一般的にいつ？",enemy:0,nm:"さとがえりの精",lv:4,opts:["妊娠初期","妊娠5〜6ヶ月頃","妊娠7〜8ヶ月頃","出産2週間前"],ans:2,ok:"正解！\n妊娠7〜8ヶ月頃に帰省するケースが多いです。\n飛行機は妊娠36週以降は制限があります。",ng:"不正解…\n妊娠7〜8ヶ月頃が一般的です。"},
+  {q:"育児休業（育休）を\n取得できる期間は？",enemy:1,nm:"いくきゅうの精",lv:5,opts:["最長3ヶ月","最長6ヶ月","原則子が1歳まで（最長2歳）","制限なし"],ans:2,ok:"正解！\n育休は原則子が1歳になるまで取得可能。\n保育所不入所などの場合は最長2歳まで延長できます。",ng:"不正解…\n原則子が1歳まで（最長2歳）取得できます。"},
+  {q:"「パパ育休」の\n正式名称は？",enemy:2,nm:"パパいくきゅうの精",lv:6,opts:["父親特別休暇","産後パパ育休（出生時育児休業）","父親有給休暇","育児参加休暇"],ans:1,ok:"正解！\n「産後パパ育休（出生時育児休業）」は\n子の出生後8週間以内に4週間まで取得できます。",ng:"不正解…\n正式名称は「産後パパ育休（出生時育児休業）」です。"},
+  {q:"妊娠中のカフェインは\n1日何mgまでが安全とされる？",enemy:3,nm:"カフェインの精",lv:7,opts:["300mg（コーヒー約3杯）","200mg（コーヒー約2杯）","100mg（コーヒー約1杯）","制限なし"],ans:1,ok:"正解！\nWHOは妊婦のカフェインを1日200mg以下に\n制限することを推奨しています。",ng:"不正解…\n正しくは1日200mg（コーヒー約2杯）以下です。"},
+  {q:"妊婦が避けるべき\n入浴は？",enemy:4,nm:"にゅうよくの精",lv:6,opts:["シャワー","38〜40度のぬるめ湯","長時間の高温浴（42度以上）","炭酸泉"],ans:2,ok:"正解！\n長時間の高温浴は体温上昇・血圧低下・めまいのリスク。\nぬるめ（38〜40度）で短時間が適切です。",ng:"不正解…\n長時間の高温浴は妊婦には危険です。"},
+  {q:"産前産後休業（産休）の\n産前の期間は？",enemy:0,nm:"さんきゅうの精",lv:6,opts:["4週間","6週間","8週間","12週間"],ans:1,ok:"正解！\n産前休業は出産予定日6週間前（多胎は14週前）から\n取得できます。本人の請求が必要です。",ng:"不正解…\n正しくは6週間（産前）です。"},
+  {q:"「胎教」として\n効果が期待されるのは？",enemy:1,nm:"たいきょうの精",lv:4,opts:["激しい音楽を聴かせる","母親がリラックスして穏やかに話しかける","暗い部屋で静かにする","辛い食べ物を食べる"],ans:1,ok:"正解！\n母親がリラックスした状態で\n穏やかに話しかけることが胎教に効果的とされます。",ng:"不正解…\n母親がリラックスして話しかけることです。"},
+  // ── 赤ちゃんの発達 追加 ──
+  {q:"新生児の呼吸数は\n1分間に約何回？",enemy:2,nm:"こきゅうの精",lv:6,opts:["10〜15回","30〜50回","60〜80回","100回以上"],ans:1,ok:"正解！\n新生児の呼吸数は1分間に30〜50回と\n大人（15〜20回）より多いです。",ng:"不正解…\n正しくは30〜50回です。\n大人より速いです。"},
+  {q:"新生児の心拍数は\n1分間に約何回？",enemy:3,nm:"しんぱくのせいれい",lv:6,opts:["40〜60回","60〜80回","100〜160回","200回以上"],ans:2,ok:"正解！\n新生児の心拍数は100〜160回/分と大人の約2倍。\n元気に動いているときはさらに速くなります。",ng:"不正解…\n正しくは100〜160回/分です。"},
+  {q:"赤ちゃんが物を\n「つかむ」反射は何という？",enemy:4,nm:"はあくの精",lv:6,opts:["モロー反射","把握反射（はあくはんしゃ）","歩行反射","探索反射"],ans:1,ok:"正解！\n手のひらに触れると握り締める「把握反射」は\n生後3〜4ヶ月頃まで見られる原始反射です。",ng:"不正解…\n正しくは「把握反射（はあくはんしゃ）」です。"},
+  {q:"「モロー反射」とは\nどんな動き？",enemy:0,nm:"もろーの精",lv:7,opts:["足を踏み出す歩行動作","大きな音に両手を広げてから抱きしめる動き","口に触れると吸う動き","体を丸める動き"],ans:1,ok:"正解！\nモロー反射は大きな音や刺激に反応して\n両腕を広げてから抱きしめる動きです。",ng:"不正解…\n正しくは両手を広げて抱きしめる動きです。"},
+  {q:"赤ちゃんが「人見知り」を\nするようになるのは？",enemy:1,nm:"ひとみしりの精",lv:5,opts:["生後2〜3ヶ月","生後4〜5ヶ月","生後6〜8ヶ月","1歳以降"],ans:2,ok:"正解！\n生後6〜8ヶ月頃から人見知りが始まります。\n愛着（アタッチメント）形成の証拠です。",ng:"不正解…\n正しくは生後6〜8ヶ月頃からです。"},
+  {q:"「社会的参照」とは\nどういう行動？",enemy:2,nm:"しゃかいてきさんしょうの精",lv:8,opts:["鏡で自分を見る","親の表情を確認して行動を決める","他の赤ちゃんを真似る","授乳サインを出す"],ans:1,ok:"正解！\n社会的参照とは新しい状況で親の表情を見て\n安全かどうか判断する生後8ヶ月〜の行動です。",ng:"不正解…\n親の表情を確認して行動を決めることです。"},
+  {q:"赤ちゃんの視野が\n広がってくるのは？",enemy:3,nm:"しやの精",lv:6,opts:["生後1ヶ月","生後3〜4ヶ月","生後7〜8ヶ月","1歳頃"],ans:1,ok:"正解！\n生後3〜4ヶ月頃から視野が広がり\n色の識別も向上してきます。",ng:"不正解…\n正しくは生後3〜4ヶ月頃です。"},
+  {q:"赤ちゃんが「いないいないばあ」を\n楽しめるようになるのは？",enemy:4,nm:"ばあの精",lv:5,opts:["生後2〜3ヶ月","生後4〜5ヶ月","生後6〜8ヶ月","1歳以降"],ans:2,ok:"正解！\nいないいないばあは物の永続性を理解し始める\n生後6〜8ヶ月頃から楽しめます。",ng:"不正解…\n正しくは生後6〜8ヶ月頃からです。"},
+  {q:"「ハンドリガード」とは\n何を指す？",enemy:0,nm:"てあしの精",lv:7,opts:["赤ちゃんが自分の手をじっと見つめる行動","握手の反射動作","親の手を追う視線","手を使って歩く行動"],ans:0,ok:"正解！\nハンドリガードは生後2〜3ヶ月頃に見られる\n自分の手をじっと見つめる行動です。",ng:"不正解…\n自分の手をじっと見つめる行動のことです。"},
+  {q:"歩行反射が\n消えるのはいつ頃？",enemy:1,nm:"ほこうはんしゃの精",lv:7,opts:["生後1週間","生後2ヶ月頃","生後6ヶ月頃","1歳頃"],ans:1,ok:"正解！\n新生児の歩行反射は生後2ヶ月頃に消えます。\n一次的に消え、後に自分の意志で歩くことを学びます。",ng:"不正解…\n正しくは生後2ヶ月頃に消えます。"},
+  // ── 育児・お世話 追加 ──
+  {q:"赤ちゃんの頭の形を\n整えるため有効なことは？",enemy:2,nm:"あたまのかたちの精",lv:6,opts:["常に仰向けで寝かせる","向き癖を直すため頭の向きを変える","うつぶせで寝かせる","枕を厚くする"],ans:1,ok:"正解！\n向き癖を防ぐためこまめに向きを変えましょう。\n「ドーナツ枕」も補助的に使えます。",ng:"不正解…\n向き癖を直すため頭の向きを変えましょう。"},
+  {q:"おんぶひもで赤ちゃんを\nおんぶできるのは？",enemy:3,nm:"おんぶの精",lv:5,opts:["新生児からOK","首がすわってから（3〜4ヶ月）","お座りができてから","1歳から"],ans:1,ok:"正解！\n首がすわる3〜4ヶ月頃からおんぶが可能になります。\n（新生児対応製品を除く）",ng:"不正解…\n正しくは首がすわる3〜4ヶ月頃からです。"},
+  {q:"赤ちゃんの鼻水を\n吸引する道具は？",enemy:4,nm:"はなすいの精",lv:3,opts:["スポイト","鼻水吸引器（鼻吸い器）","ティッシュのみ","綿棒"],ans:1,ok:"正解！\n赤ちゃんは自分で鼻をかめません。\n鼻水吸引器で優しく吸引しましょう。",ng:"不正解…\n鼻水吸引器（鼻吸い器）を使います。"},
+  {q:"赤ちゃんの室温の\n適切な目安は？",enemy:0,nm:"しつおんの精",lv:4,opts:["18〜20度","20〜25度（季節により調整）","28〜30度","32〜35度"],ans:1,ok:"正解！\n室温は20〜25度程度が目安です。\n夏は冷やしすぎず、冬は暖かくしすぎずが大切。",ng:"不正解…\n正しくは20〜25度程度が目安です。"},
+  {q:"赤ちゃんの衣類の\nサイズ表記「50」は？",enemy:1,nm:"ふくのサイズの精",lv:3,opts:["体重50gのとき","身長50cm用","生後50日用","50号サイズ"],ans:1,ok:"正解！\nベビー服のサイズ表記は身長（cm）が基準。\n「50」は身長50cm用を意味します。",ng:"不正解…\n正しくは身長50cm用のことです。"},
+  {q:"赤ちゃんの衣類の\n洗濯に適しているのは？",enemy:2,nm:"せんたくの精",lv:4,opts:["蛍光増白剤入りの洗剤","ベビー用・低刺激の洗剤","香り付き柔軟剤たっぷり","熱湯洗い"],ans:1,ok:"正解！\nベビー用や低刺激の洗剤が肌に優しいです。\n蛍光増白剤は肌荒れの原因になることがあります。",ng:"不正解…\nベビー用・低刺激の洗剤を使いましょう。"},
+  {q:"ベビーベッドの\nマットレスが硬めである理由は？",enemy:3,nm:"べびーべっどの精",lv:6,opts:["汚れにくいから","赤ちゃんが動きやすいから","窒息防止のため","洗いやすいから"],ans:2,ok:"正解！\nやわらかすぎるマットレスに顔が埋まると\n窒息の危険があります。硬めが安全です。",ng:"不正解…\n窒息防止のために硬めのマットレスが推奨されます。"},
+  {q:"「魔の3週目（3週間）」とも\n呼ばれる現象は？",enemy:4,nm:"まのさんしゅうの精",lv:7,opts:["急に体重が減る","赤ちゃんが特によく泣く時期","発熱が多い時期","哺乳量が激減する"],ans:1,ok:"正解！\n生後3週頃は赤ちゃんが特によく泣く時期。\n「魔の3週目」と呼ばれます。授乳間隔も乱れがちです。",ng:"不正解…\n生後3週頃は特によく泣く時期です。"},
+  {q:"「コリック（黄昏泣き）」とは？",enemy:0,nm:"たそがれなきの精",lv:7,opts:["夜明けに泣き続ける","原因不明の激しい長泣き（特に夕方）","空腹の泣き方","眠い時の泣き方"],ans:1,ok:"正解！\nコリックとは原因が特定できない激しい泣き。\n特に夕方〜夜に多く、生後1〜3ヶ月頃がピークです。",ng:"不正解…\n原因不明の激しい長泣き（特に夕方）のことです。"},
+  {q:"「スキンシップ」で\nオキシトシンが増えると何が良い？",enemy:1,nm:"きずなの精",lv:7,opts:["免疫力が下がる","親子の絆（愛着）が深まる","成長が早まる","睡眠が減る"],ans:1,ok:"正解！\nスキンシップはオキシトシン（愛情ホルモン）を促進し\n親子の愛着（ボンディング）形成を深めます。",ng:"不正解…\n親子の絆（愛着）が深まります。"},
+  // ── 日本の行事・文化 追加 ──
+  {q:"「お食い初め」の\n献立に必ず入るものは？",enemy:2,nm:"おくいぞめこんだての精",lv:5,opts:["ケーキ","鯛の焼き魚","お寿司","ラーメン"],ans:1,ok:"正解！\nお食い初めの膳には尾頭付きの鯛が欠かせません。\n赤飯・煮物・お吸い物・歯固め石も基本です。",ng:"不正解…\n尾頭付きの鯛が定番です。"},
+  {q:"七五三で子どもが食べる\n縁起菓子といえば？",enemy:3,nm:"ちとせあめの精",lv:4,opts:["紅白まんじゅう","千歳飴（ちとせあめ）","どら焼き","おはぎ"],ans:1,ok:"正解！\n千歳飴は細長く、長寿を願う縁起物です。\n鶴亀の絵が描かれた袋に入っています。",ng:"不正解…\n正しくは千歳飴（ちとせあめ）です。"},
+  {q:"お正月の「お年玉」を\n渡す風習はいつから？",enemy:4,nm:"おとしだまの精",lv:7,opts:["江戸時代以前からある","明治時代に始まった","戦後の昭和時代に普及","平成に始まった"],ans:2,ok:"正解！\nお年玉（お金）を渡す現在の形は\n戦後の昭和時代に普及しました。",ng:"不正解…\n現在の形は戦後の昭和時代に普及しました。"},
+  {q:"赤ちゃんの初めての\nお正月に飾るものは？",enemy:0,nm:"はつしょうがつのかざりの精",lv:5,opts:["ひな人形","破魔弓（男）または羽子板（女）","こいのぼり","五月人形"],ans:1,ok:"正解！\n初正月には男の子に破魔弓、\n女の子に羽子板を飾る習慣があります。",ng:"不正解…\n正しくは破魔弓（男）または羽子板（女）です。"},
+  {q:"「百日祝い」に\n食べさせる真似をする料理は？",enemy:1,nm:"ひゃくにちごぜんの精",lv:6,opts:["ケーキ","一汁三菜の和食膳","おかゆ","茶碗蒸し"],ans:1,ok:"正解！\nお食い初めでは一汁三菜の和食膳を用意し\n食べさせる真似をして健やかな成長を願います。",ng:"不正解…\n正しくは一汁三菜の和食膳です。"},
+  {q:"節分の恵方巻を食べる時の\nルールは？",enemy:2,nm:"えほうまきの精",lv:3,opts:["切って食べる","その年の恵方を向いて黙って一気に食べる","家族で分け合う","お祈りしてから食べる"],ans:1,ok:"正解！\n恵方巻はその年の恵方を向いて\n黙ったまま一気に食べると縁起が良いとされます。",ng:"不正解…\n恵方を向いて黙って一気に食べます。"},
+  {q:"「子の日の祝い」として有名な\n行事はどれ？",enemy:3,nm:"ねのひの精",lv:8,opts:["節分","七草がゆ（1月7日）","端午の節句","ひな祭り"],ans:1,ok:"正解！\n1月7日に春の七草を入れたおかゆを食べる\n七草がゆは一年の無病息災を願う行事です。",ng:"不正解…\n正しくは七草がゆ（1月7日）です。"},
+  {q:"「ニューボーンフォト」とは？",enemy:4,nm:"にゅーぼーんの精",lv:3,opts:["出産直後の親の写真","生後28日以内の新生児を撮る写真","誕生日の記念写真","初節句の写真"],ans:1,ok:"正解！\nニューボーンフォトは生後28日以内の\n新生児期を記録した写真です。ポーズ撮影には資格が必要。",ng:"不正解…\n生後28日以内の新生児を撮る写真です。"},
+  {q:"「選び取り（えらびとり）」で\n赤ちゃんに選ばせるものは？",enemy:0,nm:"えらびとりの精",lv:4,opts:["ぬいぐるみ一択","お箸・鉛筆・お金などの縁起物","おむつとミルク","好きな食べ物"],ans:1,ok:"正解！\n選び取りでは将来を象徴する物を並べ\n赤ちゃんが選んだ物でその子の将来を占います。",ng:"不正解…\nお箸・鉛筆・お金などの縁起物を選ばせます。"},
+  // ── 栄養・授乳 追加 ──
+  {q:"授乳中に特に多く必要な\n栄養素は？",enemy:1,nm:"じゅにゅうえいようの精",lv:6,opts:["ビタミンA","カルシウム・鉄分","ビタミンE","亜鉛"],ans:1,ok:"正解！\n授乳中はカルシウム・鉄分の需要が高まります。\n乳製品・小魚・ほうれん草などを積極的に摂りましょう。",ng:"不正解…\nカルシウムと鉄分が特に必要です。"},
+  {q:"混合育児（母乳とミルク併用）で\nミルクを補う目安は？",enemy:2,nm:"こんごうの精",lv:6,opts:["毎回母乳の前","母乳後に足りない分を補う","1日1回だけ","授乳のたびに大量に補う"],ans:1,ok:"正解！\n母乳をしっかり飲ませた後に\n足りない分をミルクで補うのが基本です。",ng:"不正解…\n母乳後に足りない分を補うのが基本です。"},
+  {q:"赤ちゃんへの「幸運の食材」\nとして離乳食後期からOKなのは？",enemy:3,nm:"しらすの精",lv:6,opts:["たらこ","しらす（塩分に注意）","辛子","マヨネーズ"],ans:1,ok:"正解！\nしらすはカルシウム・鉄分が豊富で\n離乳食に向いています。塩分を抜いて与えましょう。",ng:"不正解…\n正しくはしらす（塩分を抜いて）です。"},
+  {q:"「フォローアップミルク」は\n何ヶ月から使える？",enemy:4,nm:"ふぉろーあっぷの精",lv:5,opts:["0ヶ月（普通のミルクの代わりに）","3〜4ヶ月","9ヶ月以降","1歳以降のみ"],ans:2,ok:"正解！\nフォローアップミルクは生後9ヶ月以降から使用可。\n離乳食で不足しがちな鉄分を補います。",ng:"不正解…\n正しくは生後9ヶ月以降からです。"},
+  {q:"離乳食「後期」の\n食材の固さの目安は？",enemy:0,nm:"こうきりにゅうの精",lv:6,opts:["なめらかなドロドロ","舌でつぶせる固さ","歯ぐきでつぶせる固さ","普通の大人と同じ"],ans:2,ok:"正解！\n離乳食後期（9〜11ヶ月）は歯ぐきでつぶせる\nバナナ程度の固さが目安です。",ng:"不正解…\n正しくは歯ぐきでつぶせる固さです。"},
+  {q:"赤ちゃんに水分補給として\n水・麦茶を与えてよい時期は？",enemy:1,nm:"すいぶんほきゅうの精",lv:5,opts:["生後すぐから","生後1ヶ月から","離乳食を始めた頃から","1歳以降"],ans:2,ok:"正解！\n母乳・ミルクのみの時期は水分として足ります。\n離乳食を始める5〜6ヶ月頃から麦茶なども与え始めます。",ng:"不正解…\n離乳食を始めた頃（5〜6ヶ月頃）からです。"},
+  {q:"「アレルギー」の原因になりやすい\n食材で、卵と並んで多いのは？",enemy:2,nm:"アレルギーの精",lv:6,opts:["さつまいも","牛乳","白米","きゅうり"],ans:1,ok:"正解！\n卵・牛乳・小麦が乳幼児の三大アレルゲンです。\n初めて食べる時は少量ずつ様子を見ましょう。",ng:"不正解…\n正しくは牛乳です。卵・牛乳・小麦が三大アレルゲン。"},
+  {q:"離乳食で初めて食べ物を\n試す際のルールは？",enemy:3,nm:"はじめてたべるの精",lv:5,opts:["夕食時に試す","午前中に少量ずつ試す","まとめて複数を試す","体調が悪くても試してOK"],ans:1,ok:"正解！\n初めての食材は午前中に少量（スプーン1さじ）から。\n万が一アレルギーが出た時にすぐ受診できます。",ng:"不正解…\n午前中に少量（1さじ）から試すのが正しいです。"},
+  // ── 健康・安全 追加 ──
+  {q:"赤ちゃんの「黄疸」が\n続いて受診すべきサインは？",enemy:4,nm:"おうだんの精",lv:7,opts:["生後2〜3日で黄色くなった","生後2週間以上続く・便が白っぽい","哺乳量が増えた","夕方だけ黄色い"],ans:1,ok:"正解！\n黄疸が生後2週間以上続く・便が白っぽい場合は\n「閉塞性黄疸」など疾患の可能性があり要受診です。",ng:"不正解…\n2週間以上続く・白っぽい便は要受診サインです。"},
+  {q:"乳幼児を太陽光に当てる\n目的のひとつは？",enemy:0,nm:"にっこうよくの精",lv:5,opts:["日焼けさせるため","ビタミンDを合成させるため","体温を上げるため","免疫を下げるため"],ans:1,ok:"正解！\n太陽光を浴びることで皮膚でビタミンDが合成されます。\n骨の成長に重要です。長時間は避けましょう。",ng:"不正解…\nビタミンDの合成が目的です。"},
+  {q:"乳幼児の「中耳炎」に\nなりやすい理由は？",enemy:1,nm:"ちゅうじえんの精",lv:7,opts:["耳の形が大人と違うから","耳管が短く水平のため細菌が入りやすい","免疫がないから","頭が重いから"],ans:1,ok:"正解！\n乳幼児は耳管が短く水平に近いため\n鼻の細菌が中耳に入りやすく中耳炎になりやすいです。",ng:"不正解…\n耳管が短く水平なため細菌が入りやすいからです。"},
+  {q:"赤ちゃんのうんちの\n正常な色は？",enemy:2,nm:"うんちの精",lv:5,opts:["白〜灰色","緑〜黄色","黒（墨のような）","赤（血便）"],ans:1,ok:"正解！\n緑〜黄色は正常なうんちの色です。\n白・黒・赤は要注意！白は胆道疾患の可能性があります。",ng:"不正解…\n正しくは緑〜黄色が正常です。"},
+  {q:"「突発性発疹」が\n多い時期は？",enemy:3,nm:"とっぱつのせいれい",lv:6,opts:["生後1ヶ月以内","生後6ヶ月〜1歳半頃","2〜3歳","小学生以降"],ans:1,ok:"正解！\n突発性発疹（突発）は生後6ヶ月〜1歳半頃に多く\n38〜40度の高熱が3〜4日続き解熱後に発疹が出ます。",ng:"不正解…\n正しくは生後6ヶ月〜1歳半頃が多いです。"},
+  {q:"赤ちゃんの「おへそ」が\n出ている状態（臍ヘルニア）は？",enemy:4,nm:"さいへるにあの精",lv:6,opts:["すぐ手術が必要","多くは1〜2歳で自然治癒する","放置してはいけない","珍しい病気"],ans:1,ok:"正解！\n臍ヘルニア（でべそ）は多くの場合1〜2歳までに\n自然に閉じます。大きいものは治療が必要な場合も。",ng:"不正解…\n多くは1〜2歳で自然治癒します。"},
+  {q:"乳幼児のワクチン接種で\n「同時接種」が可能な理由は？",enemy:0,nm:"どうじせっしゅの精",lv:7,opts:["副作用がなくなるから","免疫への影響がなく安全で効率的だから","医療費が安くなるから","痛みが減るから"],ans:1,ok:"正解！\n複数ワクチンを同時接種しても\n免疫効果や安全性に問題はなく、早期に免疫ができます。",ng:"不正解…\n免疫への影響がなく安全で効率的だからです。"},
+  {q:"赤ちゃんが誤ってタバコを\n食べたら最初にすること？",enemy:1,nm:"たばこごいんの精",lv:8,opts:["無理やり吐かせる","水を飲ませる","すぐに中毒110番か救急へ","様子を見る"],ans:2,ok:"正解！\nタバコの誤飲は中毒リスクが高く緊急事態です。\nすぐに中毒110番（072-727-2499）か救急に連絡を。",ng:"不正解…\nすぐに中毒110番か救急へ連絡してください。"},
+  {q:"子どもの転倒・落下事故が\n最も多い場所は？",enemy:2,nm:"てんとうの精",lv:5,opts:["お風呂場","ベッド・ソファなどの家具から","階段","玄関"],ans:1,ok:"正解！\nベビーベッド・ソファ・椅子などからの転落が\n乳幼児の事故で最も多いです。目を離さないで。",ng:"不正解…\nベッド・ソファなどの家具からの転落が最多です。"},
+  {q:"「アナフィラキシー」が\n起きた時の緊急処置は？",enemy:3,nm:"アナフィラキシーの精",lv:9,opts:["アイスで冷やす","エピペン（アドレナリン）を使用し119番","水を飲ませる","様子を見る"],ans:1,ok:"正解！\nアナフィラキシーはエピペンを使用し\nすぐに119番を！命に関わる緊急事態です。",ng:"不正解…\nエピペンを使用しすぐに119番してください。"},
+  {q:"「乳幼児健康診査」で\n行われる主な内容は？",enemy:4,nm:"けんこうしんさの精",lv:4,opts:["IQテスト","身体計測・発達確認・予防接種確認","視力矯正","歯の治療"],ans:1,ok:"正解！\n乳幼児健診では身体計測・発達状態・\n栄養状態・予防接種の確認などが行われます。",ng:"不正解…\n身体計測・発達確認・予防接種確認などです。"},
+  // ── 妊娠・出産 さらに追加 ──
+  {q:"妊婦の体重増加の\n適正目安（普通体型）は？",enemy:0,nm:"たいじゅうかのうの精",lv:6,opts:["1〜3kg","5〜7kg","7〜12kg","15〜20kg"],ans:2,ok:"正解！\n普通体型の妊婦は妊娠全期間で7〜12kgの\n体重増加が目安です（BMIにより異なります）。",ng:"不正解…\n正しくは7〜12kgが目安です。"},
+  {q:"胎盤（たいばん）が\n完成するのはいつ頃？",enemy:1,nm:"たいばんの精",lv:6,opts:["妊娠4週","妊娠8週","妊娠12週頃","妊娠28週頃"],ans:2,ok:"正解！\n胎盤は妊娠12週頃に完成します。\nそれまでは「絨毛（じゅうもう）」が栄養を届けます。",ng:"不正解…\n正しくは妊娠12週頃です。"},
+  {q:"「前置胎盤（ぜんちたいばん）」とは？",enemy:2,nm:"ぜんちたいばんの精",lv:8,opts:["胎盤が子宮の前に位置する","胎盤が子宮口をふさいでいる状態","胎盤が2枚ある状態","胎盤が小さい状態"],ans:1,ok:"正解！\n前置胎盤とは胎盤が子宮口をふさいでいる状態。\n出血リスクが高く、帝王切開になることが多いです。",ng:"不正解…\n胎盤が子宮口をふさいでいる状態のことです。"},
+  {q:"妊婦に推奨される\n1日の歩数の目安は？",enemy:3,nm:"さんぽの精",lv:5,opts:["500歩以下","1000〜2000歩","5000〜7000歩","15000歩以上"],ans:2,ok:"正解！\n妊娠中は5000〜7000歩程度の\nウォーキングが推奨されています。体調次第で調整を。",ng:"不正解…\n5000〜7000歩程度が推奨されています。"},
+  {q:"「羊水（ようすい）」の\n主な役割は？",enemy:4,nm:"ようすいの精",lv:6,opts:["胎児の消化を助ける","衝撃から胎児を守り体温を保つ","酸素を供給する","胎盤を形成する"],ans:1,ok:"正解！\n羊水は外部の衝撃から胎児を守り\n体温・圧力を一定に保つクッションの役割を果たします。",ng:"不正解…\n衝撃から守り体温を保つのが主な役割です。"},
+  // ── 赤ちゃんの発達 さらに追加 ──
+  {q:"「アタッチメント（愛着）」形成に\n最も重要なのは？",enemy:0,nm:"あいちゃくの精",lv:7,opts:["おもちゃの量","親がすぐに応答すること（応答的育児）","離乳食の質","勉強環境"],ans:1,ok:"正解！\n赤ちゃんのサインにすぐ応答する「応答的育児」が\n愛着（アタッチメント）形成の鍵です。",ng:"不正解…\n親がすぐ応答する「応答的育児」が最重要です。"},
+  {q:"物の「永続性」を理解し始めるのは？",enemy:1,nm:"ものの永続性の精",lv:7,opts:["生後2〜3ヶ月","生後4〜5ヶ月","生後8〜10ヶ月","1歳半頃"],ans:2,ok:"正解！\n「隠しても物は消えない」という物の永続性を\n理解するのは生後8〜10ヶ月頃です。",ng:"不正解…\n正しくは生後8〜10ヶ月頃です。"},
+  {q:"赤ちゃんが物を\n「口に入れる」のは何のため？",enemy:2,nm:"なめなめの精",lv:5,opts:["食べようとしている","口で物の感触を確認・探索するため","不衛生な行動","歯のかゆさを紛らわすため"],ans:1,ok:"正解！\n赤ちゃんは口（感覚器）を使って物の形・質感を\n探索します。発達上正常な行動です。",ng:"不正解…\n口で感触を確認・探索するための正常な行動です。"},
+  {q:"「クーイング」とは？",enemy:3,nm:"くーいんぐの精",lv:6,opts:["ハイハイの一種","生後2〜3ヶ月頃の「アー」「ウー」という声","泣く前兆の動作","おむつが濡れたサイン"],ans:1,ok:"正解！\nクーイングは生後2〜3ヶ月頃に出る喃語の前段階。\n「アー」「ウー」と機嫌よく声を出す行動です。",ng:"不正解…\n生後2〜3ヶ月頃の「アー」「ウー」という声です。"},
+  // ── 育児・お世話 さらに追加 ──
+  {q:"赤ちゃんの\n爪切りに適した道具は？",enemy:4,nm:"つめのどうぐの精",lv:3,opts:["大人用の爪切り","ベビー用の爪切りorやすり","ハサミ","爪をかむ"],ans:1,ok:"正解！\nベビー用の小型爪切りや爪やすりが安全です。\n大人用は刃が大きく深爪の原因になります。",ng:"不正解…\nベビー用の爪切りまたはやすりを使いましょう。"},
+  {q:"「スリング」と「抱っこひも」の\n大きな違いは？",enemy:0,nm:"スリングの精",lv:5,opts:["価格の違い","片方の肩にかけるか両肩にかけるかの違い","対象年齢の違い","素材の違い"],ans:1,ok:"正解！\nスリングは一方の肩にかけるタイプ、\n抱っこひもは両肩にかけるタイプが一般的です。",ng:"不正解…\n片方vs両肩の違いが最大の特徴です。"},
+  {q:"赤ちゃんが泣いたとき\n「抱き癖がつく」という考えは？",enemy:1,nm:"だきぐせの精",lv:4,opts:["正しい（抱き癖はつく）","間違い（抱き癖はない・応答が重要）","ある程度は正しい","月齢による"],ans:1,ok:"正解！\n「抱き癖がつく」は古い考え方です。\n泣いたらすぐ抱っこすることが愛着形成を促します。",ng:"不正解…\n「抱き癖」は誤解。泣いたらすぐ抱っこが大切です。"},
+  {q:"ベビーバスを使う\n卒業のタイミングは？",enemy:2,nm:"べびーばすの精",lv:4,opts:["生後1週間","首がすわる3〜4ヶ月頃","お宮参り（生後1ヶ月頃）","ハイハイを始めてから"],ans:2,ok:"正解！\nお宮参り（生後1ヶ月頃）を目安に\n家族の湯船に一緒に入るようになります。",ng:"不正解…\n生後1ヶ月頃（お宮参り後）が目安です。"},
+  {q:"赤ちゃんの\n寝かしつけで有効なのは？",enemy:3,nm:"ねかしつけの精",lv:4,opts:["激しく揺らす","添い寝・授乳・タッチケア","テレビをつける","明るい部屋で遊ばせる"],ans:1,ok:"正解！\n添い寝・授乳・タッチケア（優しく触れる）が\n赤ちゃんの安心感を高めます。",ng:"不正解…\n添い寝・授乳・タッチケアが有効です。"},
+  // ── 栄養・授乳 さらに追加 ──
+  {q:"離乳食「完了期」は\n何ヶ月〜何ヶ月頃？",enemy:4,nm:"かんりょうきの精",lv:5,opts:["6〜8ヶ月","9〜11ヶ月","12〜18ヶ月（1歳〜1歳半）","2歳以降"],ans:2,ok:"正解！\n離乳食完了期は1歳〜1歳半頃（12〜18ヶ月）。\n3回食で大人と近い食事に近づいていきます。",ng:"不正解…\n正しくは1歳〜1歳半（12〜18ヶ月）です。"},
+  {q:"赤ちゃんに与えてはいけない\n飲み物はどれ？",enemy:0,nm:"きんしいんりょうの精",lv:5,opts:["麦茶（無糖）","白湯（さゆ）","果汁（少量）","スポーツ飲料"],ans:3,ok:"正解！\nスポーツ飲料は糖分・塩分が多く\n1歳未満の赤ちゃんには向きません。",ng:"不正解…\nスポーツ飲料は糖分・塩分が多く赤ちゃんにNGです。"},
+  // ── 健康・安全 さらに追加 ──
+  {q:"赤ちゃんの誤飲で\n「吐かせてはいけない」ものは？",enemy:1,nm:"はかせてはいけないの精",lv:8,opts:["おもちゃのパーツ","ボタン電池・洗剤などの腐食性のもの","ガム","ゼリー"],ans:1,ok:"正解！\nボタン電池・漂白剤などは吐かせると\n食道をさらに傷つけます。すぐ救急へ！",ng:"不正解…\nボタン電池・洗剤は吐かせず即救急へ！"},
+  {q:"「熱性けいれん」後に\n救急車を呼ぶ目安は？",enemy:2,nm:"けいれんきゅうきゅうの精",lv:8,opts:["けいれんが1分以上続く","けいれんが5分以上続く・または繰り返す","けいれんが止まったらすぐに","体温が38度になったら"],ans:1,ok:"正解！\nけいれんが5分以上続く、または止まってまた起きる場合は\nすぐ119番を！多くは数分で止まります。",ng:"不正解…\n5分以上続くか繰り返す場合は119番してください。"},
+  {q:"予防接種後に\n注意すべき期間は？",enemy:3,nm:"ワクチンごの精",lv:5,opts:["30分間（接種後の待機含む）","接種当日のみ","接種後3〜4日間","1週間以上"],ans:0,ok:"正解！\n接種後30分は医療機関で経過観察が必要です。\n発熱等は2〜3日以内に出ることが多いです。",ng:"不正解…\n接種後30分は医療機関内で待機が必要です。"},
+  {q:"「ロタウイルス」は\nどのような症状を起こす？",enemy:4,nm:"ロタの精",lv:6,opts:["高熱のみ","激しい嘔吐・下痢（白色便）による脱水","皮膚の発疹","けいれん"],ans:1,ok:"正解！\nロタウイルスは激しい嘔吐・白色の下痢便が特徴。\n脱水になりやすく乳幼児は重症化リスクがあります。",ng:"不正解…\n激しい嘔吐・白色下痢による脱水が主症状です。"},
+  {q:"赤ちゃんの指しゃぶりは\nいつ頃まで自然に見られる？",enemy:0,nm:"ゆびしゃぶりの精",lv:5,opts:["生後3ヶ月まで","生後6ヶ月まで","2〜3歳頃まで","5歳以降も続く"],ans:2,ok:"正解！\n指しゃぶりは2〜3歳頃まで見られる自然な行動。\n4歳以降も続く場合は歯科相談を検討しましょう。",ng:"不正解…\n2〜3歳頃までは自然な発達の一部です。"},
+  // ── ボーナス問題 ──
+  {q:"「カンガルーケア」とは？",enemy:1,nm:"カンガルーの精",lv:6,opts:["袋型のおくるみ","親の素肌に赤ちゃんを直接抱く肌触れあいケア","オーストラリア発の育児法","乳母車の一種"],ans:1,ok:"正解！\nカンガルーケアは親の素肌に直接赤ちゃんを\n抱く方法。体温維持・愛着形成・授乳促進に効果的。",ng:"不正解…\n親の素肌に直接抱く肌触れあいケアのことです。"},
+  {q:"赤ちゃんに話しかけることを\n「マザリーズ」というが特徴は？",enemy:2,nm:"マザリーズの精",lv:7,opts:["低い声で話しかける","高めのゆっくりした声でゆったり話す","早口で情報を与える","無言で見つめる"],ans:1,ok:"正解！\nマザリーズ（育児語）は高め・ゆっくり・繰り返しの\n話し方。赤ちゃんの注意を引き言語発達を助けます。",ng:"不正解…\n高めのゆっくりした声で話すことが特徴です。"},
+  {q:"赤ちゃんの「おしゃぶり」が\nSIDS予防に役立つとされる理由は？",enemy:3,nm:"おしゃぶりとSIDSの精",lv:8,opts:["口が塞がるから","睡眠中の気道確保を助けるとされるから","温度を保つから","泣かなくなるから"],ans:1,ok:"正解！\n一部の研究でおしゃぶりを使った睡眠が\nSIDSリスク低下と関連するとされています。",ng:"不正解…\n睡眠中の気道確保を助けるとされているためです。"},
+  {q:"新生児のへその緒の\nケアとして正しいのは？",enemy:4,nm:"へそのおケアの精",lv:5,opts:["おへそをテープで覆う","乾いた状態を保ち消毒する","毎日濡れたタオルで拭く","特別なケアは不要"],ans:1,ok:"正解！\nへその緒は乾燥を保ち、消毒用アルコールで\n根元を清潔にします。自然に取れるのを待ちましょう。",ng:"不正解…\n乾いた状態を保ち消毒するのが正しいケアです。"},
+  {q:"「産後ケア」施設を\n利用できるのは産後何日以内？",enemy:0,nm:"さんごケアの精",lv:6,opts:["退院から7日以内","退院から30日以内","産後4ヶ月以内","産後1年以内"],ans:2,ok:"正解！\n産後ケア事業は産後4ヶ月（一部は1歳まで）が\n対象です。自治体により異なります。",ng:"不正解…\n産後4ヶ月以内が一般的な対象期間です。"},
+  {q:"「絵本の読み聞かせ」が\n言語発達に良いとされる理由は？",enemy:1,nm:"えほんことばの精",lv:5,opts:["静かになるから","豊富な語彙と感情表現に早期から触れられるから","視力が上がるから","記憶力だけを鍛えるから"],ans:1,ok:"正解！\n読み聞かせは豊富な語彙・感情・リズムに触れ\n言語発達・情緒発達・親子の絆を育てます。",ng:"不正解…\n豊富な語彙や感情表現に触れられるからです。"},
+  {q:"「ベビーマッサージ」の\n効果として正しいのは？",enemy:2,nm:"まっさーじの精",lv:5,opts:["筋肉を鍛える","免疫力を下げる","スキンシップで愛着形成を促す","消化力を弱める"],ans:2,ok:"正解！\nベビーマッサージはスキンシップにより\n愛着形成・コリック緩和・睡眠改善に効果的です。",ng:"不正解…\nスキンシップで愛着形成を促すことが主な効果です。"},
+  {q:"「名前を呼ぶ」ことが\n赤ちゃんに与える影響は？",enemy:3,nm:"なまえを呼ぶの精",lv:5,opts:["特に影響はない","自己認識と言語発達を促す","睡眠を妨げる","体重増加に関係する"],ans:1,ok:"正解！\n名前を繰り返し呼ぶことで自己認識が発達し\n言語理解のベースが育まれます。",ng:"不正解…\n自己認識と言語発達を促すことが分かっています。"},
+  {q:"「産後の骨盤ケア」が\n重要な理由は？",enemy:4,nm:"こつばんの精",lv:6,opts:["体型を早く戻すため","骨盤の歪みによる腰痛・尿もれ予防のため","授乳を助けるため","赤ちゃんの発達のため"],ans:1,ok:"正解！\n出産で緩んだ骨盤靭帯を整えることで\n腰痛・尿もれ・体型崩れを予防できます。",ng:"不正解…\n腰痛・尿もれ予防が主な理由です。"},
+  {q:"「予防接種スケジュール」を\n管理するのに役立つ公的サービスは？",enemy:0,nm:"ワクチンかんりの精",lv:4,opts:["SNS","母子健康手帳（母子手帳）","スポーツジムの記録","学校のお便り"],ans:1,ok:"正解！\n母子手帳には予防接種記録欄があり\nスケジュール管理に欠かせないツールです。",ng:"不正解…\n正しくは母子健康手帳（母子手帳）です。"},
+];
+
+/* ══════════════════════════════════════════
+   PARTY MEMBERS
+══════════════════════════════════════════ */
+const PARTY = [
+  {name:"くまちゃん",joinAt:2,svgFn:svgBear,color:"#C8905A",
+   desc:"赤ちゃんへの最初のプレゼント。ふわふわの毛並みで赤ちゃんを包んでくれる。",
+   intro:"「ぼくも一緒に行く！」\n\nくまちゃんが仲間になった！\n\n赤ちゃんへの最初のプレゼント、\n大切に届けよう。"},
+  {name:"コウノトリ",joinAt:5,svgFn:svgStork,color:"#E0E8F0",
+   desc:"命を運ぶ伝説の鳥。幸せを届けることが使命。",
+   intro:"「命を運ぶのが私の使命…」\n\nコウノトリが仲間になった！\n\n幸せを届ける伝説の鳥が\n旅に加わった。"},
+  {name:"さやかさん",joinAt:8,svgFn:svgNurse,color:"#F4A8C0",
+   desc:"経験豊富な助産師。出産と育児のプロフェッショナル。",
+   intro:"「安心して、一緒に頑張りましょう！」\n\n助産師のさやかさんが\n仲間になった！\n\n頼れる専門家が心強い。"},
+  {name:"じいじ・ばあば",joinAt:10,svgFn:svgGrandparents,color:"#A0B8D0",
+   desc:"大切な家族。孫の誕生を心待ちにしている。",
+   intro:"「応援してるよ！」\n\nおじいちゃんとおばあちゃんが\n仲間になった！\n\n大切な家族がそばにいる。"},
+];
+
+/* ══════════════════════════════════════════
+   GAME STATE
+══════════════════════════════════════════ */
+let cur=0, score=0, streak=0, answered=false, canNext=false, shuffled=[];
+let partyJoined=[], pendingJoin=null, playerName='', lastScore=0;
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+document.getElementById('title-hero-svg').innerHTML = svgTitleHero();
+document.getElementById('player-spr').innerHTML = svgPlayer(52,68).match(/<svg[^>]*>([\s\S]*)<\/svg>/)[1];
+
+function updateCD() {
+  const d = Math.ceil((new Date('2026-11-21') - new Date()) / 86400000);
+  const el = document.getElementById('cd-num');
+  if (el) el.textContent = d > 0 ? d : 'BORN!';
+}
+
+function updateBestDisplay() {
+  const b = LS.best();
+  document.getElementById('best-display').textContent = b > 0 ? `${b} / 12` : '-- / 12';
+}
+
+updateCD();
+updateBestDisplay();
+
+// Service Worker 登録
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+/* ══════════════════════════════════════════
+   SCREEN NAVIGATION
+══════════════════════════════════════════ */
+function show(id) {
+  document.querySelectorAll('.scr').forEach(s => s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+
+function goTitle()  { updateCD(); updateBestDisplay(); show('s-title'); startBGM(); }
+function goHowto()  { sfxSelect(); show('s-howto'); }
+
+/* ══════════════════════════════════════════
+   NAME INPUT
+══════════════════════════════════════════ */
+function goName() {
+  sfxSelect(); initAC(); startBGM();
+  const saved = LS.name();
+  const inp = document.getElementById('name-input');
+  inp.value = saved;
+  show('s-name');
+  setTimeout(() => inp.focus(), 300);
+}
+
+function confirmName() {
+  sfxSelect();
+  const inp = document.getElementById('name-input');
+  playerName = inp.value.trim() || 'たびびと';
+  LS.setName(playerName);
+  goIntro();
+}
+
+// Enterキーでも確定
+document.getElementById('name-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') confirmName();
+});
+
+/* ══════════════════════════════════════════
+   INTRO
+══════════════════════════════════════════ */
+function goIntro() {
+  show('s-intro');
+  const iv = document.getElementById('intro-char-svg');
+  iv.innerHTML = svgPlayer(120,160).match(/<svg[^>]*>([\s\S]*)<\/svg>/)[1];
+  document.getElementById('intro-btn').style.display = 'none';
+  document.getElementById('intro-text').textContent = '';
+
+  const name = playerName || LS.name() || 'たびびと';
+  const lines = [
+    `${name}へ。`,
+    '\n\n2026年11月21日——',
+    '\nあなたの元へ、',
+    '\n赤ちゃんがやってくる。',
+    '\n\n準備はできているか？',
+    '\n\n知識の旅へ、出発しよう。',
+  ];
+
+  let acc = '';
+  function nextLine(i) {
+    if (i >= lines.length) {
+      document.getElementById('intro-btn').style.display = 'block';
+      return;
+    }
+    const target = acc + lines[i];
+    let pos = acc.length;
+    const iv2 = setInterval(() => {
+      if (pos >= target.length) {
+        clearInterval(iv2); acc = target;
+        setTimeout(() => nextLine(i + 1), 180);
+        return;
+      }
+      document.getElementById('intro-text').textContent = target.slice(0, ++pos);
+    }, 55);
+  }
+  nextLine(0);
+}
+
+/* ══════════════════════════════════════════
+   BATTLE
+══════════════════════════════════════════ */
+function startBattle() {
+  sfxSelect();
+  // ランダム12問選出
+  shuffled = [...ALL_QS].sort(() => Math.random() - .5).slice(0, 12);
+  cur = 0; score = 0; streak = 0; answered = false; canNext = false;
+  partyJoined = []; pendingJoin = null;
+
+  // Reset party slots
+  for (let i = 0; i < 4; i++) {
+    const sl = document.getElementById('ps' + i);
+    sl.className = 'party-slot'; sl.innerHTML = '';
+  }
+  document.getElementById('streak-badge').style.display = 'none';
+
+  const name = playerName || LS.name() || 'PLAYER';
+  document.getElementById('hud-player-name').textContent = name.slice(0, 8);
+
+  show('s-battle');
+  renderQ();
+}
+
+/* ══════════════════════════════════════════
+   RENDER QUESTION
+══════════════════════════════════════════ */
+function renderQ() {
+  answered = false; canNext = false;
+  const q = shuffled[cur], total = shuffled.length;
+
+  const remain = total - cur, pct = (remain / total) * 100;
+  const fill = document.getElementById('hp-fill');
+  fill.style.width = pct + '%';
+  fill.style.background = pct > 50 ? 'var(--green)' : pct > 25 ? '#E8C44A' : 'var(--red)';
+  document.getElementById('e-exp-fill').style.width = ((score / total) * 100) + '%';
+
+  document.getElementById('e-name').textContent = q.nm;
+  document.getElementById('e-lv').textContent = 'Lv.' + q.lv;
+  document.getElementById('enemy-spr').innerHTML = ENEMY_SVGS[q.enemy || 0];
+  document.getElementById('ql-label').textContent = 'Q.' + String(cur + 1).padStart(2, '0') + '/' + total;
+  document.getElementById('exp-label').textContent = 'EXP ▸ ' + (score * 100);
+
+  document.getElementById('cmd-panel').style.display = 'none';
+  document.getElementById('msg-area').style.display = 'block';
+  document.getElementById('msg-next').style.display = 'none';
+  setMsg('やせいの「' + q.nm + '」が\n現れた！', true);
+}
+
+/* ══════════════════════════════════════════
+   MESSAGE
+══════════════════════════════════════════ */
+let _t = null;
+function setMsg(txt, thenCmd) {
+  clearTimeout(_t);
+  document.getElementById('msg-text').textContent = txt;
+  document.getElementById('msg-next').style.display = 'none';
+  if (thenCmd) _t = setTimeout(showCmd, 850);
+}
+
+function showCmd() {
+  const q = shuffled[cur];
+  for (let i = 0; i < 4; i++) {
+    const b = document.getElementById('o' + i);
+    b.textContent = q.opts[i]; b.className = 'cmd-btn'; b.disabled = false;
+  }
+  document.getElementById('msg-area').style.display = 'none';
+  document.getElementById('cmd-panel').style.display = 'grid';
+}
+
+/* ══════════════════════════════════════════
+   ANSWER
+══════════════════════════════════════════ */
+function pick(idx) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[cur], ok = (idx === q.ans);
+
+  for (let i = 0; i < 4; i++) {
+    const b = document.getElementById('o' + i);
+    b.disabled = true;
+    if (i === q.ans) b.classList.add('c-reveal');
+  }
+  document.getElementById('o' + idx).className = 'cmd-btn ' + (ok ? 'c-correct' : 'c-wrong');
+
+  if (ok) {
+    score++; streak++;
+    sfxCorrect(); vib([60]);
+    document.getElementById('e-exp-fill').style.width = ((score / shuffled.length) * 100) + '%';
+    document.getElementById('exp-label').textContent = 'EXP ▸ ' + (score * 100);
+    document.getElementById('field').classList.add('effect-flash');
+    setTimeout(() => document.getElementById('field').classList.remove('effect-flash'), 400);
+
+    // Streak system
+    if (streak >= 3) {
+      sfxStreak(); vib([80, 40, 80]);
+      const sb = document.getElementById('streak-badge');
+      sb.textContent = `🔥 ${streak} STREAK!`;
+      sb.style.display = 'block';
+      sb.style.animation = 'none';
+      void sb.offsetWidth;
+      sb.style.animation = 'streak-pulse .5s ease-out';
+    }
+  } else {
+    streak = 0;
+    sfxWrong(); vib([30, 40, 30]);
+    document.getElementById('streak-badge').style.display = 'none';
+    document.getElementById('field').classList.add('effect-shake');
+    setTimeout(() => document.getElementById('field').classList.remove('effect-shake'), 350);
+  }
+
+  // Check party join
+  const pm = PARTY.find(p => !partyJoined.includes(p.name) && score >= p.joinAt);
+  pendingJoin = (ok && pm) ? pm : null;
+
+  document.getElementById('cmd-panel').style.display = 'none';
+  document.getElementById('msg-area').style.display = 'block';
+  document.getElementById('msg-text').textContent = (ok ? q.ok : q.ng);
+  document.getElementById('msg-next').style.display = 'block';
+  _t = setTimeout(() => { canNext = true; }, 400);
+}
+
+function onMsgTap() {
+  if (!canNext || !answered) return;
+  canNext = false;
+  if (pendingJoin) {
+    const pm = pendingJoin; pendingJoin = null;
+    partyJoined.push(pm.name);
+    LS.unlock(pm.name);
+    updatePartyBar(pm);
+    showJoinCutscene(pm);
+    return;
+  }
+  cur++;
+  if (cur >= shuffled.length) showResult();
+  else renderQ();
+}
+
+/* ══════════════════════════════════════════
+   PARTY BAR
+══════════════════════════════════════════ */
+function updatePartyBar(pm) {
+  const idx = PARTY.indexOf(pm);
+  if (idx < 0 || idx >= 4) return;
+  const sl = document.getElementById('ps' + idx);
+  sl.className = 'party-slot filled new-join';
+  sl.innerHTML = pm.svgFn(44, 52);
+  setTimeout(() => sl.classList.remove('new-join'), 600);
+}
+
+/* ══════════════════════════════════════════
+   JOIN CUTSCENE
+══════════════════════════════════════════ */
+function showJoinCutscene(pm) {
+  sfxJoin(); vib([200]);
+  show('s-join');
+  document.getElementById('join-name').textContent = pm.name + 'が仲間になった！';
+  document.getElementById('join-msg').textContent = pm.intro;
+  const sv = document.getElementById('join-char-svg');
+  sv.innerHTML = pm.svgFn(120, 140).match(/<svg[^>]*>([\s\S]*)<\/svg>/)[1];
+}
+
+function afterJoin() {
+  sfxSelect();
+  show('s-battle');
+  cur++;
+  if (cur >= shuffled.length) showResult();
+  else renderQ();
+}
+
+/* ══════════════════════════════════════════
+   RESULT
+══════════════════════════════════════════ */
+function showResult() {
+  show('s-result');
+  lastScore = score;
+
+  const total = shuffled.length, pct = score / total;
+  const isNewRecord = score > LS.best();
+  if (isNewRecord) LS.setBest(score);
+
+  // Party display
+  const rp = document.getElementById('result-party');
+  rp.innerHTML = '';
+  const addChar = (svgStr, delay, size) => {
+    const d = document.createElement('div');
+    d.innerHTML = svgStr;
+    d.firstChild.style.cssText = `animation:r-appear .5s cubic-bezier(.34,1.56,.64,1) ${delay}s both;width:${size}px;height:auto`;
+    rp.appendChild(d);
+  };
+  addChar(svgPlayer(52, 60), 0, 52);
+  PARTY.forEach((pm, i) => {
+    if (!partyJoined.includes(pm.name)) return;
+    addChar(pm.svgFn(46, 54), i * .15 + .1, 46);
+  });
+  if (score >= 11) addChar(svgBaby(48, 56), .7, 48);
+
+  const name = playerName || LS.name() || 'たびびと';
+  let heading, rank, msg;
+  if (pct === 1) {
+    heading = 'PERFECT!'; rank = 'RANK: S+';
+    msg = '全問正解！\n2026年11月21日が楽しみですね。\n素晴らしいパパ・ママになれます！';
+    launchConfetti(); sfxJoin(); vib([100, 50, 100, 50, 200]);
+  } else if (pct >= .8) {
+    heading = 'QUEST CLEAR'; rank = 'RANK: S';
+    msg = 'ほぼ満点！準備は万端です。\nあとは赤ちゃんを待つだけ！';
+    launchConfetti(); sfxJoin();
+  } else if (pct >= .6) {
+    heading = 'QUEST CLEAR'; rank = 'RANK: A';
+    msg = 'いい調子！\nもう少し勉強すれば完璧です。';
+    sfxCorrect();
+  } else if (pct >= .4) {
+    heading = 'CONTINUE?'; rank = 'RANK: B';
+    msg = '一緒に学んでいきましょう。\n旅はまだ続きます。';
+  } else {
+    heading = 'CONTINUE?'; rank = 'RANK: C';
+    msg = 'これから一緒に成長しよう。\n赤ちゃんが教えてくれます。';
+  }
+
+  document.getElementById('r-heading').textContent = heading;
+  document.getElementById('r-sub').textContent = `${name}のBIRTH QUEST`;
+  document.getElementById('r-num').textContent = score;
+  document.getElementById('r-rank').textContent = rank;
+  document.getElementById('r-msg').textContent = msg;
+  document.getElementById('r-record').style.display = isNewRecord ? 'block' : 'none';
+  updateBestDisplay();
+}
+
+/* ══════════════════════════════════════════
+   SHARE
+══════════════════════════════════════════ */
+async function shareResult() {
+  sfxSelect();
+  const name = playerName || LS.name() || 'たびびと';
+  const rank = document.getElementById('r-rank').textContent;
+  const text =
+    `🌟 BIRTH QUEST クリア！\n` +
+    `${name}のスコア: ${lastScore}/12問 [${rank}]\n\n` +
+    `2026年11月21日 出産予定日まで\nパパ・ママになる準備中です！`;
+
+  if (navigator.share) {
+    try { await navigator.share({ title: 'BIRTH QUEST', text }); return; } catch(e) {}
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    alert('クリップボードにコピーしました！\nSNSに貼り付けてシェアしよう。');
+  } catch(e) {
+    alert(text);
+  }
+}
+
+/* ══════════════════════════════════════════
+   ZUKAN (Encyclopedia)
+══════════════════════════════════════════ */
+function buildZukan(fromResult) {
+  const unlocked = LS.unlocked();
+  const grid = document.getElementById('zukan-grid');
+  grid.innerHTML = '';
+  PARTY.forEach(pm => {
+    const isUnlocked = unlocked.includes(pm.name);
+    const card = document.createElement('div');
+    card.className = 'zukan-card' + (isUnlocked ? ' unlocked' : ' locked');
+    if (isUnlocked) {
+      card.innerHTML =
+        `<div class="zk-char">${pm.svgFn(64,72)}</div>` +
+        `<div class="zk-name">${pm.name}</div>` +
+        `<div class="zk-desc">${pm.desc}</div>`;
+    } else {
+      card.innerHTML =
+        `<div class="zk-char">${pm.svgFn(64,72)}</div>` +
+        `<div class="zk-name">???</div>` +
+        `<div class="zk-desc">まだ出会っていない仲間</div>`;
+    }
+    grid.appendChild(card);
+  });
+
+  document.getElementById('zukan-back-btn').onclick = fromResult
+    ? () => { sfxSelect(); show('s-result'); }
+    : () => { sfxSelect(); goTitle(); };
+}
+
+function goZukan() {
+  sfxSelect(); buildZukan(false); show('s-zukan');
+}
+
+function goZukanFromResult() {
+  sfxSelect(); buildZukan(true); show('s-zukan');
+}
+
+function restartGame() { sfxSelect(); goIntro(); }
+
+/* ══════════════════════════════════════════
+   CONFETTI
+══════════════════════════════════════════ */
+function launchConfetti() {
+  const c = document.getElementById('confetti');
+  c.innerHTML = '';
+  const colors = ['#E8C44A','#F4A8C0','#78D8C0','#4A80E8','#F0E8D0','#C0A0F8'];
+  for (let i = 0; i < 50; i++) {
+    const el = document.createElement('div');
+    el.className = 'cp';
+    el.style.cssText =
+      `left:${Math.random()*100}vw;` +
+      `width:${4+Math.random()*8}px;height:${5+Math.random()*10}px;` +
+      `background:${colors[Math.floor(Math.random()*colors.length)]};` +
+      `border-radius:${Math.random()>.5?'50%':'2px'};` +
+      `animation-duration:${1.8+Math.random()*2.5}s;` +
+      `animation-delay:${Math.random()*1.5}s;`;
+    c.appendChild(el);
+  }
+  setTimeout(() => { c.innerHTML = ''; }, 6000);
+}
+</script>
+</body>
+</html>
