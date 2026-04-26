@@ -47,7 +47,7 @@ body::before{
 .scr{display:none;width:100%;animation:fade-in .3s ease}
 .scr.on{display:block}
 /* flex が必要な画面は .on との組み合わせで上書き（ID詳細度 > クラス詳細度） */
-#s-name.on,#s-intro.on,#s-join.on{display:flex}
+#s-name.on,#s-intro.on,#s-join.on,#s-loading.on{display:flex}
 
 @keyframes fade-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
@@ -219,7 +219,7 @@ body::before{
   padding:32px 24px;text-align:center;min-height:420px;
   flex-direction:column;align-items:center;justify-content:center;
 }
-.join-char{width:120px;height:140px;margin:0 auto 20px;display:block;animation:join-appear .6s cubic-bezier(.34,1.56,.64,1) both}
+.join-char{width:120px;height:140px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;animation:join-appear .6s cubic-bezier(.34,1.56,.64,1) both}
 @keyframes join-appear{from{opacity:0;transform:scale(.3) translateY(30px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .join-name{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--gold);margin-bottom:16px}
 .join-msg{font-size:13px;line-height:2.2;color:var(--text);margin-bottom:28px}
@@ -251,6 +251,25 @@ body::before{
 .zukan-card.locked .zk-char{filter:brightness(0) invert(.2)}
 .zukan-card.locked .zk-name{color:var(--border)}
 .zukan-card.locked .zk-desc{color:var(--border)}
+
+/* ══ LOADING ══ */
+#s-loading{
+  background:var(--panel);border:1px solid var(--border);border-radius:12px;
+  padding:40px 24px;min-height:420px;
+  flex-direction:column;align-items:center;justify-content:center;gap:28px;
+}
+.loading-title{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--text2);text-align:center;line-height:2;letter-spacing:1px}
+.loading-poke{width:96px;height:96px;display:flex;align-items:center;justify-content:center}
+.loading-poke img{width:96px;height:96px;object-fit:contain;image-rendering:pixelated;animation:poke-bounce 1s ease-in-out infinite alternate}
+@keyframes poke-bounce{from{transform:translateY(0)}to{transform:translateY(-12px)}}
+.loading-dots{display:flex;gap:8px}
+.loading-dots span{width:9px;height:9px;background:var(--gold);border-radius:50%;animation:dot-pulse 1.2s ease-in-out infinite}
+.loading-dots span:nth-child(2){animation-delay:.2s}
+.loading-dots span:nth-child(3){animation-delay:.4s}
+@keyframes dot-pulse{0%,100%{opacity:.2;transform:scale(.7)}50%{opacity:1;transform:scale(1.2)}}
+
+/* Pokémon sprite in party/zukan */
+.poke-img{image-rendering:pixelated;object-fit:contain;display:block;margin:auto}
 
 /* ══ EFFECTS ══ */
 .effect-shake{animation:fx-shake .35s}
@@ -296,9 +315,10 @@ body::before{
   <div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:28px 20px;">
     <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--gold);margin-bottom:20px;text-align:center;">HOW TO PLAY</div>
     <div style="font-size:12px;color:var(--text);line-height:2.8;margin-bottom:24px;">
-      ▸ 全24問からランダムに12問出題<br>
+      ▸ 256問からランダムに12問出題<br>
       ▸ 4択から正解を選ぼう<br>
-      ▸ 正解で仲間が増えていく<br>
+      ▸ 正解でポケモンが仲間になる<br>
+      ▸ 毎回ランダムな3匹が登場！<br>
       ▸ 3連続正解でストリークボーナス！<br>
       ▸ 仲間は図鑑に記録される<br>
       ▸ テキストをタップで次へ
@@ -365,9 +385,16 @@ body::before{
   </div>
 </div>
 
+<!-- ── LOADING ── -->
+<div id="s-loading" class="scr">
+  <div class="loading-title">なかまを さがしています…</div>
+  <div class="loading-poke" id="loading-poke-img"></div>
+  <div class="loading-dots"><span></span><span></span><span></span></div>
+</div>
+
 <!-- ── JOIN CUTSCENE ── -->
 <div id="s-join" class="scr">
-  <svg class="join-char" id="join-char-svg" viewBox="0 0 120 140"></svg>
+  <div class="join-char" id="join-char-div"></div>
   <div class="join-name" id="join-name"></div>
   <div class="join-msg" id="join-msg"></div>
   <button class="btn btn-gold" onclick="afterJoin()">続きへ →</button>
@@ -479,14 +506,96 @@ function vib(pattern) { if ('vibrate' in navigator) navigator.vibrate(pattern) }
 const LS = {
   name:    () => localStorage.getItem('bq_name') || '',
   best:    () => parseInt(localStorage.getItem('bq_best') || '0'),
-  unlocked:() => JSON.parse(localStorage.getItem('bq_unlocked') || '[]'),
   setName: (v) => localStorage.setItem('bq_name', v),
   setBest: (v) => localStorage.setItem('bq_best', v),
-  unlock:  (name) => {
-    const u = LS.unlocked();
-    if (!u.includes(name)) { u.push(name); localStorage.setItem('bq_unlocked', JSON.stringify(u)); }
-  }
+  // Pokémon コレクション
+  unlockedPokemon: () => JSON.parse(localStorage.getItem('bq_pokemon') || '[]'),
+  unlockPokemon: (pkm) => {
+    const list = LS.unlockedPokemon();
+    if (!list.find(p => p.id === pkm.id)) {
+      list.push({id:pkm.id, name:pkm.name, sprite:pkm.sprite, color:pkm.color, desc:pkm.desc});
+      localStorage.setItem('bq_pokemon', JSON.stringify(list));
+    }
+  },
+  // 後方互換 (図鑑表示などで名前リストが必要な場合)
+  unlocked: () => LS.unlockedPokemon().map(p => p.name),
 };
+
+/* ══════════════════════════════════════════
+   POKÉAPI
+══════════════════════════════════════════ */
+const TYPE_COLORS = {
+  normal:'#A8A878',fire:'#F08030',water:'#6890F0',grass:'#78C850',
+  electric:'#F8D030',ice:'#98D8D8',fighting:'#C03028',poison:'#A040A0',
+  ground:'#E0C068',flying:'#A890F0',psychic:'#F85888',bug:'#A8B820',
+  rock:'#B8A038',ghost:'#705898',dragon:'#7038F8',dark:'#705848',
+  steel:'#B8B8D0',fairy:'#EE99AC'
+};
+const TYPE_NAME_JA = {
+  normal:'ノーマル',fire:'ほのお',water:'みず',grass:'くさ',
+  electric:'でんき',ice:'こおり',fighting:'かくとう',poison:'どく',
+  ground:'じめん',flying:'ひこう',psychic:'エスパー',bug:'むし',
+  rock:'いわ',ghost:'ゴースト',dragon:'ドラゴン',dark:'あく',
+  steel:'はがね',fairy:'フェアリー'
+};
+
+function makePokemonImg(sprite, w, h) {
+  return `<img class="poke-img" src="${sprite}" width="${w}" height="${h}" alt="">`;
+}
+
+async function fetchSessionPokemon() {
+  const unlockedIds = new Set(LS.unlockedPokemon().map(p => p.id));
+  const MAX_ID = 898; // Gen 1-8
+  const results = [];
+
+  for (let slot = 0; slot < 3; slot++) {
+    let id, tries = 0;
+    do { id = Math.floor(Math.random() * MAX_ID) + 1; }
+    while (unlockedIds.has(id) && ++tries < 20 && unlockedIds.size < MAX_ID);
+
+    // ローディング画面にスプライトをプレビュー表示
+    const previewEl = document.getElementById('loading-poke-img');
+    if (previewEl) previewEl.innerHTML =
+      `<img class="poke-img" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png" width="96" height="96" alt="">`;
+
+    try {
+      const [pokeData, speciesData] = await Promise.all([
+        fetch(`https://pokeapi.co/api/v2/pokemon/${id}`).then(r => r.json()),
+        fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`).then(r => r.json())
+      ]);
+
+      const jaEntry = speciesData.names.find(n => n.language.name === 'ja') ||
+                      speciesData.names.find(n => n.language.name === 'ja-Hrkt');
+      const jaName = jaEntry ? jaEntry.name : pokeData.name;
+
+      const flavorEntry = speciesData.flavor_text_entries.find(
+        e => e.language.name === 'ja' || e.language.name === 'ja-Hrkt');
+      const flavor = flavorEntry
+        ? flavorEntry.flavor_text.replace(/[\n\f]/g,' ').slice(0, 55)
+        : `No.${String(id).padStart(3,'0')}`;
+
+      const sprite = pokeData.sprites.front_default ||
+        `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+      const typeName = pokeData.types[0].type.name;
+      const color = TYPE_COLORS[typeName] || '#A8A878';
+      const typeJa = TYPE_NAME_JA[typeName] || typeName;
+      const no = String(id).padStart(3,'0');
+
+      results.push({
+        id,
+        name: jaName,
+        sprite,
+        color,
+        desc: `No.${no} ▸ タイプ:${typeJa}\n${flavor}`,
+        intro: `「……」\n\n${jaName}が仲間になった！\n\n${flavor}`,
+        renderFn: (w, h) => makePokemonImg(sprite, w, h)
+      });
+    } catch(e) {
+      console.warn('PokéAPI fetch error id=' + id, e);
+    }
+  }
+  return results;
+}
 
 /* ══════════════════════════════════════════
    SVG CHARACTERS
@@ -814,44 +923,9 @@ const ALL_QS = [
 ];
 
 /* ══════════════════════════════════════════
-   PARTY MEMBERS
+   MONSTER NAMES は敵専用 (party とは独立)
 ══════════════════════════════════════════ */
-const PARTY = [
-  {name:"くまちゃん",joinAt:1,svgFn:svgBear,color:"#C8905A",
-   desc:"赤ちゃんへの最初のプレゼント。ふわふわの毛並みで赤ちゃんを包んでくれる。",
-   intro:"「ぼくも一緒に行く！」\n\nくまちゃんが仲間になった！\n\n赤ちゃんへの最初のプレゼント、\n大切に届けよう。"},
-  {name:"コウノトリ",joinAt:2,svgFn:svgStork,color:"#E0E8F0",
-   desc:"命を運ぶ伝説の鳥。幸せを届けることが使命。",
-   intro:"「命を運ぶのが私の使命…」\n\nコウノトリが仲間になった！\n\n幸せを届ける伝説の鳥が\n旅に加わった。"},
-  {name:"てんしちゃん",joinAt:3,svgFn:svgAngel,color:"#FFF8D0",
-   desc:"赤ちゃんを守る守護天使。天国から旅を見守っている。",
-   intro:"「あなたの子どもを\n天から見守っていたよ♪」\n\nてんしちゃんが仲間になった！\n\n守護天使が旅に加わった。"},
-  {name:"さやかさん",joinAt:4,svgFn:svgNurse,color:"#F4A8C0",
-   desc:"経験豊富な助産師。出産と育児のプロフェッショナル。",
-   intro:"「安心して、一緒に頑張りましょう！」\n\n助産師のさやかさんが\n仲間になった！\n\n頼れる専門家が心強い。"},
-  {name:"田中先生",joinAt:5,svgFn:svgDoctor,color:"#A8C8F0",
-   desc:"小児科医の田中先生。赤ちゃんの健康を守る名医。",
-   intro:"「何でも相談してください！」\n\n小児科医の田中先生が\n仲間になった！\n\n頼もしい専門家が加わった。"},
-  {name:"ちょうちょ",joinAt:6,svgFn:svgButterfly,color:"#E0A8F4",
-   desc:"変化と希望の象徴。新しい命の誕生を喜んでいる。",
-   intro:"「新しい命の誕生\nおめでとう！」\n\nちょうちょが仲間になった！\n\n変化と希望の象徴が\n旅に加わった。"},
-  {name:"みのりさん",joinAt:7,svgFn:svgNutritionist,color:"#A8F0B8",
-   desc:"管理栄養士のみのりさん。お母さんと赤ちゃんの食事を支える。",
-   intro:"「栄養バランスが大切よ！」\n\n管理栄養士のみのりさんが\n仲間になった！\n\n食の専門家が心強い。"},
-  {name:"はるさん",joinAt:8,svgFn:svgNurseryTeacher,color:"#F4D080",
-   desc:"保育士のはるさん。子どもの遊びと発達を知り尽くしている。",
-   intro:"「子どもの笑顔が\n私の生きがいです！」\n\n保育士のはるさんが\n仲間になった！\n\n育児のベテランが加わった。"},
-  {name:"じいじ・ばあば",joinAt:10,svgFn:svgGrandparents,color:"#A0B8D0",
-   desc:"大切な家族。孫の誕生を心待ちにしている。",
-   intro:"「応援してるよ！\nいつでも頼ってね！」\n\nおじいちゃんとおばあちゃんが\n仲間になった！\n\n大切な家族がそばにいる。"},
-  {name:"あかちゃん",joinAt:12,svgFn:svgBaby,color:"#FFD0E8",
-   desc:"旅の目的地。愛おしい、待ちわびた赤ちゃん。",
-   intro:"「…うぅ…ふぁ…」\n\nあかちゃんが生まれた！\n\n全問正解！\n旅の目的地に辿り着いた…！\n\nおめでとう！"},
-];
 
-/* ══════════════════════════════════════════
-   MONSTER NAMES (enemy typeで固定)
-══════════════════════════════════════════ */
 const MONSTER_NAMES = [
   "スライム",
   "ゴブリン",
@@ -972,7 +1046,7 @@ function goIntro() {
 /* ══════════════════════════════════════════
    BATTLE
 ══════════════════════════════════════════ */
-function startBattle() {
+async function startBattle() {
   sfxSelect();
   // ランダム12問選出
   shuffled = [...ALL_QS].sort(() => Math.random() - .5).slice(0, 12);
@@ -980,23 +1054,22 @@ function startBattle() {
   partyJoined = []; pendingJoin = null;
   sessionJoinCount = 0;
 
-  // セッション仲間：未取得からランダム最大3名を選出
-  const unlocked = LS.unlocked();
-  const available = PARTY.filter(p => !unlocked.includes(p.name));
-  sessionParty = [...available].sort(() => Math.random() - .5).slice(0, 3);
+  // ローディング画面を表示しながらポケモンをフェッチ
+  show('s-loading');
+  sessionParty = await fetchSessionPokemon();
 
-  // Reset party slots (スロット0-2はセッション枠、スロット3は既存仲間プレビュー)
+  // Reset party slots
   for (let i = 0; i < 4; i++) {
     const sl = document.getElementById('ps' + i);
     sl.className = 'party-slot'; sl.innerHTML = '';
   }
-  // 既に解放済みの仲間をスロット3にひとり表示
-  const existing = PARTY.filter(p => unlocked.includes(p.name));
-  if (existing.length > 0) {
-    const companion = existing[Math.floor(Math.random() * existing.length)];
+  // 既に解放済みのポケモンをスロット3にひとり表示
+  const existingPokemon = LS.unlockedPokemon();
+  if (existingPokemon.length > 0) {
+    const companion = existingPokemon[Math.floor(Math.random() * existingPokemon.length)];
     const sl3 = document.getElementById('ps3');
     sl3.className = 'party-slot filled pre-exist';
-    sl3.innerHTML = companion.svgFn(44, 52);
+    sl3.innerHTML = makePokemonImg(companion.sprite, 44, 52);
   }
   document.getElementById('streak-badge').style.display = 'none';
 
@@ -1112,9 +1185,9 @@ function onMsgTap() {
   canNext = false;
   if (pendingJoin) {
     const pm = pendingJoin; pendingJoin = null;
-    partyJoined.push(pm.name);
-    LS.unlock(pm.name);
-    const slotIdx = sessionJoinCount; // スロット0→1→2
+    partyJoined.push(pm);
+    LS.unlockPokemon(pm);
+    const slotIdx = sessionJoinCount;
     sessionJoinCount++;
     updatePartyBarAtSlot(pm, slotIdx);
     showJoinCutscene(pm);
@@ -1132,7 +1205,7 @@ function updatePartyBarAtSlot(pm, slotIdx) {
   if (slotIdx < 0 || slotIdx > 2) return;
   const sl = document.getElementById('ps' + slotIdx);
   sl.className = 'party-slot filled new-join';
-  sl.innerHTML = pm.svgFn(44, 52);
+  sl.innerHTML = pm.renderFn(44, 52);
   setTimeout(() => sl.classList.remove('new-join'), 600);
 }
 
@@ -1144,8 +1217,8 @@ function showJoinCutscene(pm) {
   show('s-join');
   document.getElementById('join-name').textContent = pm.name + 'が仲間になった！';
   document.getElementById('join-msg').textContent = pm.intro;
-  const sv = document.getElementById('join-char-svg');
-  sv.innerHTML = pm.svgFn(120, 140).match(/<svg[^>]*>([\s\S]*)<\/svg>/)[1];
+  const div = document.getElementById('join-char-div');
+  div.innerHTML = pm.renderFn(120, 140);
 }
 
 function afterJoin() {
@@ -1170,17 +1243,16 @@ function showResult() {
   // Party display
   const rp = document.getElementById('result-party');
   rp.innerHTML = '';
-  const addChar = (svgStr, delay, size) => {
+  const addChar = (htmlStr, delay, size) => {
     const d = document.createElement('div');
-    d.innerHTML = svgStr;
-    d.firstChild.style.cssText = `animation:r-appear .5s cubic-bezier(.34,1.56,.64,1) ${delay}s both;width:${size}px;height:auto`;
+    d.innerHTML = htmlStr;
+    if (d.firstChild) d.firstChild.style.cssText = `animation:r-appear .5s cubic-bezier(.34,1.56,.64,1) ${delay}s both;width:${size}px;height:auto`;
     rp.appendChild(d);
   };
   addChar(svgPlayer(52, 60), 0, 52);
-  // 今回のセッションで加入した仲間を表示
-  PARTY.forEach((pm, i) => {
-    if (!partyJoined.includes(pm.name)) return;
-    addChar(pm.svgFn(46, 54), i * .15 + .1, 46);
+  // 今回のセッションで加入したポケモンを表示
+  partyJoined.forEach((pm, i) => {
+    addChar(pm.renderFn(46, 54), i * .15 + .1, 46);
   });
 
   const name = playerName || LS.name() || 'たびびと';
@@ -1241,26 +1313,30 @@ async function shareResult() {
    ZUKAN (Encyclopedia)
 ══════════════════════════════════════════ */
 function buildZukan(fromResult) {
-  const unlocked = LS.unlocked();
+  const collected = LS.unlockedPokemon();
   const grid = document.getElementById('zukan-grid');
   grid.innerHTML = '';
-  PARTY.forEach(pm => {
-    const isUnlocked = unlocked.includes(pm.name);
-    const card = document.createElement('div');
-    card.className = 'zukan-card' + (isUnlocked ? ' unlocked' : ' locked');
-    if (isUnlocked) {
+
+  if (collected.length === 0) {
+    grid.innerHTML =
+      `<div style="grid-column:1/-1;text-align:center;color:var(--text2);` +
+      `font-size:11px;padding:32px 16px;line-height:2.4;">` +
+      `まだ仲間がいない…<br>クエストをクリアして<br>ポケモンを集めよう！</div>`;
+  } else {
+    collected.forEach(pm => {
+      const card = document.createElement('div');
+      card.className = 'zukan-card unlocked';
       card.innerHTML =
-        `<div class="zk-char">${pm.svgFn(64,72)}</div>` +
+        `<div class="zk-char">${makePokemonImg(pm.sprite, 64, 72)}</div>` +
         `<div class="zk-name">${pm.name}</div>` +
-        `<div class="zk-desc">${pm.desc}</div>`;
-    } else {
-      card.innerHTML =
-        `<div class="zk-char">${pm.svgFn(64,72)}</div>` +
-        `<div class="zk-name">???</div>` +
-        `<div class="zk-desc">まだ出会っていない仲間</div>`;
-    }
-    grid.appendChild(card);
-  });
+        `<div class="zk-desc">${(pm.desc||'').replace(/\n/g,'<br>')}</div>`;
+      grid.appendChild(card);
+    });
+  }
+
+  const total = collected.length;
+  const titleEl = document.querySelector('.zukan-title');
+  if (titleEl) titleEl.textContent = `— 仲間図鑑 ${total}匹 —`;
 
   document.getElementById('zukan-back-btn').onclick = fromResult
     ? () => { sfxSelect(); show('s-result'); }
